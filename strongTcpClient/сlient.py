@@ -5,23 +5,19 @@ import time
 
 from strongTcpClient import config
 from strongTcpClient import baseCommands
+from strongTcpClient.connection import Connection
+from strongTcpClient.connectionPool import ConnectionPool
 from strongTcpClient.message import Message
-from strongTcpClient.messagePool import MessagePool
 from strongTcpClient.baseCommandsImpl import CloseConnectionCommand
 from strongTcpClient.tools import getCommandNameList, tryUuid
 
 
 class StrongClient:
-    def __init__(self, client_commands=[]):
-        self.ip = config.ip
-        self.port = config.port
+    def __init__(self, ip, port, client_commands=[]):
+        self.ip = ip
+        self.port = port
 
-        self.isRunning = False
-
-        self.sock = socket.socket()
-        self.listener_thread = Thread(target=self.main_listener)
-        self.message_pool = MessagePool()
-        self.request_pool = MessagePool()
+        self.connection_pool = ConnectionPool()
 
         self.base_commands_list = getCommandNameList(baseCommands)
         self.user_commands_list = client_commands
@@ -36,50 +32,29 @@ class StrongClient:
                 return comm_name[0]
         return None
 
-    def send(self, bdata):
-        self.sock.send(bdata)
-
-    def msend(self, bdata):
-        bdata_len = (len(bdata)).to_bytes(4, 'big')
-        self.sock.send(bdata_len + bdata)
-
-    def recv(self, buffsize, timeout=None):
-        self.sock.settimeout(timeout)
-        try:
-            answer = self.sock.recv(buffsize)
-            return answer
-        except socket.timeout as timeex:
-            raise TimeoutError('Удалённый сервер не ответил на приветствие в установленное время')
-        finally:
-            self.sock.settimeout(None)
-
-    def mrecv(self):
-        banswer_size = self.recv(4)
-        answer_size = int.from_bytes(banswer_size, 'big')
-        ball_answer = self.recv(answer_size)
-        return ball_answer.decode()
-
-    def send_message(self, message, need_answer=True):
+    def send_message(self, message, conn, need_answer=True):
         if message.getCommand() in self.unknown_command_list:
             # TODO: наверное стоит сделать своё исключение на это дело
             raise Exception('Попытка оптравки неизвестной команды!')
-        self.msend(message.getBytes())
-        print(f'Msg JSON send: {message.getBytes().decode()}')
-        if need_answer:
-            self.request_pool.addMessage(message)
 
-    def send_hello(self):
+        message.setConnection(conn)
+        conn.msend(message.getBytes())
+        print(f'[{conn.getpeername()}] Msg JSON send: {message.getBytes().decode()}')
+        if need_answer:
+            conn.request_pool.addMessage(message)
+
+    def send_hello(self, connection):
         bdata = uuid.UUID(baseCommands.JSON_PROTOCOL_FORMAT).bytes
-        self.send(bdata)
-        answer = self.recv(16, timeout=3)
+        connection.send(bdata)
+        answer = connection.recv(16, timeout=3)
         if answer != bdata:
             raise TypeError('Удалённый сервер не согласовал тип протокола')
 
-    def protocol_compatible_req(self):
+    def protocol_compatible_req(self, connection):
         msg = Message.command(self, baseCommands.PROTOCOL_COMPATIBLE)
         msg['protocolVersionLow'] = config.protocolVersionLow
         msg['protocolVersionHigh'] = config.protocolVersionHigh
-        self.send_message(msg, need_answer=False)
+        self.send_message(msg, connection, need_answer=False)
 
     def protocol_compatible_handler(self, msg):
         def protocol_compatible(versionLow, versionHigh):
@@ -102,34 +77,34 @@ class StrongClient:
             # raise ProtocolIncompatibleEx(msg)
 
     def close_connection_handler(self, msg):
-        self.send_message(msg.getAnswerCopy(), need_answer=False)
-        self.isRunning = False
+        self.send_message(msg.getAnswerCopy(), msg.my_connection, need_answer=False)
+        msg.my_connection.isRunning = False
 
     def unknow_command_handler(self, msg):
         unknown_command_uid = msg.getContent().get('commandId')
         self.unknown_command_list.append(unknown_command_uid)
-        for req_msg in self.request_pool.values():
+        for req_msg in msg.my_connection.request_pool.values():
             if req_msg.getCommand() == unknown_command_uid:
-                msg = Message(self, id=req_msg.getId(), command=baseCommands.UNKNOWN)
-                self.message_pool.addMessage(msg)
+                fake_msg = Message(self, id=req_msg.getId(), command=baseCommands.UNKNOWN)
+                msg.my_connection.message_pool.addMessage(fake_msg)
 
-    def exec_command_sync(self, command, *args, **kwargs):
+    def exec_command_sync(self, command, conn, *args, **kwargs):
         msg = command.initial(self, *args, **kwargs)
-        self.send_message(msg)
+        self.send_message(msg, conn)
 
         max_time_life = msg.getMaxTimeLife()
         t_end = None
         if max_time_life:
             t_end = time.time() + max_time_life
-        while True and self.isRunning:
+        while True and conn.isRunning:
             if t_end and time.time() > t_end:
-                self.request_pool.dellMessage(msg)
+                conn.request_pool.dellMessage(msg)
                 return command.timeout()
 
-            if msg.getId() in self.message_pool:
-                ans_msg = self.message_pool[msg.getId()]
-                self.request_pool.dellMessage(msg)
-                self.message_pool.dellMessage(ans_msg)
+            if msg.getId() in conn.message_pool:
+                ans_msg = conn.message_pool[msg.getId()]
+                conn.request_pool.dellMessage(msg)
+                conn.message_pool.dellMessage(ans_msg)
 
                 if ans_msg.getCommand() == baseCommands.UNKNOWN:
                     return command.unknown(msg)
@@ -138,22 +113,22 @@ class StrongClient:
 
             time.sleep(1)
 
-    def exec_command_async(self, command, *args, **kwargs):
+    def exec_command_async(self, command, conn, *args, **kwargs):
         def answer_handler():
             max_time_life = msg.getMaxTimeLife()
             t_end = None
             if max_time_life:
                 t_end = time.time() + max_time_life
-            while True and self.isRunning:
+            while True and conn.isRunning:
                 if t_end and time.time() > t_end:
-                    self.request_pool.dellMessage(msg)
+                    conn.request_pool.dellMessage(msg)
                     command.timeout()
                     return
 
-                if msg.getId() in self.message_pool:
-                    ans_msg = self.message_pool[msg.getId()]
-                    self.request_pool.dellMessage(msg)
-                    self.message_pool.dellMessage(ans_msg)
+                if msg.getId() in conn.message_pool:
+                    ans_msg = conn.message_pool[msg.getId()]
+                    conn.request_pool.dellMessage(msg)
+                    conn.message_pool.dellMessage(ans_msg)
 
                     if ans_msg.getCommand() == baseCommands.UNKNOWN:
                         command.unknown(msg)
@@ -164,7 +139,7 @@ class StrongClient:
                 time.sleep(1)
 
         msg = command.initial(self, *args, **kwargs)
-        self.send_message(msg)
+        self.send_message(msg, conn)
 
         listener_thread = Thread(target=answer_handler)
         listener_thread.start()
@@ -181,14 +156,18 @@ class StrongClient:
     def user_commands_handlers(self, msg):
         pass
 
-    def main_listener(self):
-        while self.isRunning:
-            answer = self.mrecv()
+    def start_listening(self, connection):
+        thread = Thread(target=self.command_listener, args=(connection,))
+        thread.start()
+
+    def command_listener(self, connection):
+        while connection.isRunning:
+            answer = connection.mrecv()
             if answer:
-                print(f'Msg JSON receeved: {answer}')
-                msg = Message.fromString(self, answer)
-                print(f'Msg received: {msg}')
-                if msg.getId() not in self.request_pool:
+                print(f'[{connection.getpeername()}] Msg JSON receeved: {answer}')
+                msg = Message.fromString(self, answer, connection)
+                print(f'[{connection.getpeername()}] Msg received: {msg}')
+                if msg.getId() not in connection.request_pool:
                     # Это команды
                     if msg.getCommand() in [uuid[1] for uuid in self.base_commands_list]:
                         self.base_commands_handlers(msg)
@@ -196,33 +175,57 @@ class StrongClient:
                         self.user_commands_handlers(msg)
                 else:
                     # Это ответы, который нужно обработать
-                    self.message_pool.addMessage(msg)
+                    connection.message_pool.addMessage(msg)
 
         print(f'Disconect from host: {self.ip}:{self.port}')
 
-    def start(self):
+    def connect(self):
         ''' Порядок установки соединения '''
+        connection = Connection()
         try:
-            self.sock.connect((self.ip, self.port))
+            connection.connect((self.ip, self.port))
         except ConnectionRefusedError as ex:
             print('Не удалось, установить соединение, удалённый сервер не доступен')
             return
-        ''' После установки TCP соединения клиент отправляет на сокет сервера 16 байт (обычный uuid). 
-            Это сигнатура протокола. Строковое представление сигнатуры для json формата: "fea6b958-dafb-4f5c-b620-fe0aafbd47e2". 
-            Если сервер присылает назад этот же uuid, то все ОК - можно работать'''
-        self.send_hello()
+        self.start(connection)
+        return connection
+
+    def connect_listener(self, serv_sock, new_client_handler):
+        while True:
+            sock, adr = serv_sock.accept()
+            conn = Connection(sock)
+            print(f'{conn.getpeername()} - was connected')
+            self.start(conn)
+
+            if new_client_handler:
+                new_client_handler(conn)
+
+    def listen(self, new_client_handler=None):
+        serv_sock = socket.socket()
+        serv_sock.bind((self.ip, self.port))
+        serv_sock.listen(10)
+
+        thread = Thread(target=self.connect_listener, args=(serv_sock, new_client_handler))
+        thread.start()
+
+    def start(self, connection):
+        self.connection_pool.addConnection(connection)
+        ''' После установки TCP соединения клиент отправляет на сокет сервера 16 байт (обычный uuid).
+                    Это сигнатура протокола. Строковое представление сигнатуры для json формата: "fea6b958-dafb-4f5c-b620-fe0aafbd47e2".
+                    Если сервер присылает назад этот же uuid, то все ОК - можно работать'''
+        self.send_hello(connection)
         ''' После того как сигнатуры протокола проверены клиент и сервер отправляют друг другу первое сообщение - 
             ProtocolCompatible.'''
-        self.protocol_compatible_req()
+        self.protocol_compatible_req(connection)
 
-        self.isRunning = True
-        self.listener_thread.start()
+        connection.isRunning = True
+        self.start_listening(connection)
 
-    def finish(self, code, description, is_async=False):
-        if not self.isRunning:
+    def finish(self, conn, code, description, is_async=False):
+        if not conn.isRunning:
             return
 
         if is_async:
-            self.exec_command_async(CloseConnectionCommand, code, description)
+            self.exec_command_async(CloseConnectionCommand, conn, code, description)
         else:
-            self.exec_command_sync(CloseConnectionCommand, code, description)
+            self.exec_command_sync(CloseConnectionCommand, conn, code, description)

@@ -29,8 +29,9 @@ class Message(dict):
             res.append(f'{field}: {self[field]}')
         return ', '.join(res)
 
-    def __init__(self, client, id=None, command=None):
+    def __init__(self, client, conn=None, id=None, command=None):
         self.my_client = client
+        self.my_connection = conn
         if id is not None:
             if tryUuid(id):
                 self['id'] = id
@@ -48,6 +49,9 @@ class Message(dict):
                 raise ValueError('Неизвестный идентификатор команды')
 
         self['flags'] = MsgFlag()
+
+    def setConnection(self, conn):
+        self.my_connection = conn
 
     def getCopy(self):
         return copy(self)
@@ -124,7 +128,7 @@ class Message(dict):
         return msg
 
     @staticmethod
-    def fromString(client, string_msg):
+    def fromString(client, string_msg, conn):
         recieved_dict = json.loads(string_msg)
         msg = Message(client, id=recieved_dict['id'], command=recieved_dict['command'])
         if recieved_dict.get('flags'):
@@ -133,4 +137,5 @@ class Message(dict):
             if recieved_dict.get(key):
                 msg[key] = recieved_dict.get(key)
 
+        msg.setConnection(conn)
         return msg

@@ -1,6 +1,6 @@
 #
-ip = '127.0.0.1'
-port = 48062
+connect_ip = '127.0.0.1'
+connect_port = 48062
 
 #
 checkProtocolVersion = False
