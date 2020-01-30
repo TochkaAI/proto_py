@@ -4,6 +4,7 @@ from threading import Thread
 import time
 
 from strongTcpClient import config
+from strongTcpClient.logger import write_info
 from strongTcpClient import baseCommands
 from strongTcpClient.connection import Connection
 from strongTcpClient.connectionPool import ConnectionPool
@@ -39,7 +40,7 @@ class StrongClient:
 
         message.setConnection(conn)
         conn.msend(message.getBytes())
-        print(f'[{conn.getpeername()}] Msg JSON send: {message.getBytes().decode()}')
+        write_info(f'[{conn.getpeername()}] Msg JSON send: {message.getBytes().decode()}')
         if need_answer:
             conn.request_pool.addMessage(message)
 
@@ -164,9 +165,9 @@ class StrongClient:
         while connection.isRunning:
             answer = connection.mrecv()
             if answer:
-                print(f'[{connection.getpeername()}] Msg JSON receeved: {answer}')
+                write_info(f'[{connection.getpeername()}] Msg JSON receeved: {answer}')
                 msg = Message.fromString(self, answer, connection)
-                print(f'[{connection.getpeername()}] Msg received: {msg}')
+                write_info(f'[{connection.getpeername()}] Msg received: {msg}')
                 if msg.getId() not in connection.request_pool:
                     # Это команды
                     if msg.getCommand() in [uuid[1] for uuid in self.base_commands_list]:
@@ -177,7 +178,7 @@ class StrongClient:
                     # Это ответы, который нужно обработать
                     connection.message_pool.addMessage(msg)
 
-        print(f'Disconect from host: {self.ip}:{self.port}')
+        write_info(f'Disconect from host: {self.ip}:{self.port}')
 
     def connect(self):
         ''' Порядок установки соединения '''
@@ -185,7 +186,7 @@ class StrongClient:
         try:
             connection.connect((self.ip, self.port))
         except ConnectionRefusedError as ex:
-            print('Не удалось, установить соединение, удалённый сервер не доступен')
+            write_info('Не удалось, установить соединение, удалённый сервер не доступен')
             return
         self.start(connection)
         return connection
@@ -194,7 +195,7 @@ class StrongClient:
         while True:
             sock, adr = serv_sock.accept()
             conn = Connection(sock)
-            print(f'{conn.getpeername()} - was connected')
+            write_info(f'{conn.getpeername()} - was connected')
             self.start(conn)
 
             if new_client_handler:
