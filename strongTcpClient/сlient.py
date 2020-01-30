@@ -1,10 +1,10 @@
 import socket
 import uuid
 from threading import Thread
-import json
 
 from strongTcpClient import baseCommands
 from strongTcpClient.message import Message
+from strongTcpClient.messagePool import MessagePool
 
 
 class StrongClient:
@@ -15,8 +15,12 @@ class StrongClient:
         self.isRunning = False
 
         self.sock = socket.socket()
-        self.thread = Thread(target=self.main_listener)
+        self.listener_thread = Thread(target=self.main_listener)
+        self.message_pool = MessagePool()
+        self.request_pool = MessagePool()
 
+    # Самые базовые команды
+    # =========================================
     def send(self, bdata):
         self.sock.send(bdata)
 
@@ -40,9 +44,13 @@ class StrongClient:
         ball_answer = self.recv(answer_size)
         return ball_answer.decode()
 
-    def send_message(self, message):
+    def send_message(self, message, need_answer=True):
         self.msend(message.getBytes())
+        if need_answer:
+            self.request_pool.addMessage(message)
 
+    # Относительно вспомогательные команды
+    # =========================================
     def send_hello(self):
         bdata = uuid.UUID(baseCommands.JSON_PROTOCOL_FORMAT).bytes
         self.send(bdata)
@@ -50,12 +58,17 @@ class StrongClient:
         if answer != bdata:
             raise TypeError('Удалённый сервер не согласовал тип протокола')
 
-    def protocol_compatible(self):
+    def protocol_compatible_req(self):
         msg = Message.command(baseCommands.PROTOCOL_COMPATIBLE)
-        self.send_message(msg)
+        self.send_message(msg, need_answer=False)
 
-        answer = self.mrecv()
-        msg = Message.fromString(answer)
+    def protocol_compatible_handler(self, msg):
+        # TODO: тут как-то надо обработать поддержиываемую версию протокола.
+        # надо ещё понять откуда её взять
+        pass
+
+    def exec_command(self, command):
+        command(self)
 
     def main_listener(self):
         while self.isRunning:
@@ -64,6 +77,13 @@ class StrongClient:
                 print(f'Msg JSON receeved: {answer}')
                 msg = Message.fromString(answer)
                 print(f'Msg received: {msg}')
+                if msg.getId() not in self.request_pool:
+                    # TODO Это команда с той стороны, её нужно прям тут и обработать!
+                    if msg.getCommand() == baseCommands.PROTOCOL_COMPATIBLE:
+                        self.protocol_compatible_handler(msg)
+                else:
+                    # Это команда / ответ, который нужно обработать
+                    self.message_pool.addMessage(msg)
 
         print('end of listening')
 
@@ -80,10 +100,10 @@ class StrongClient:
         self.send_hello()
         ''' После того как сигнатуры протокола проверены клиент и сервер отправляют друг другу первое сообщение - 
             ProtocolCompatible.'''
-        self.protocol_compatible()
+        self.protocol_compatible_req()
 
         self.isRunning = True
-        self.thread.start()
+        self.listener_thread.start()
 
     def finish(self):
         self.isRunning = False

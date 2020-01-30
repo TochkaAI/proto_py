@@ -45,6 +45,12 @@ class Message(dict):
         self['content'] = content
         self['flags'].setFlagValue('contentIsEmpty', 0)
 
+    def getId(self):
+        return self['id']
+
+    def getCommand(self):
+        return self['command']
+
     def getBytes(self):
         result = dict()
         for f in Message.TCP_FIELDS:
