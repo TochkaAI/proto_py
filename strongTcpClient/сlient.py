@@ -1,6 +1,7 @@
 import socket
 import uuid
 from threading import Thread
+import time
 
 from strongTcpClient import baseCommands
 from strongTcpClient.message import Message
@@ -19,8 +20,9 @@ class StrongClient:
         self.message_pool = MessagePool()
         self.request_pool = MessagePool()
 
-    # Самые базовые команды
-    # =========================================
+        self.unknown_command_list = []
+
+
     def send(self, bdata):
         self.sock.send(bdata)
 
@@ -45,12 +47,13 @@ class StrongClient:
         return ball_answer.decode()
 
     def send_message(self, message, need_answer=True):
+        if message.getCommand() in self.unknown_command_list:
+            # TODO: наверное стоит сделать своё исключение на это дело
+            raise Exception('Попытка оптравки неизвестной команды!')
         self.msend(message.getBytes())
         if need_answer:
             self.request_pool.addMessage(message)
 
-    # Относительно вспомогательные команды
-    # =========================================
     def send_hello(self):
         bdata = uuid.UUID(baseCommands.JSON_PROTOCOL_FORMAT).bytes
         self.send(bdata)
@@ -67,8 +70,52 @@ class StrongClient:
         # надо ещё понять откуда её взять
         pass
 
-    def exec_command(self, command):
-        command(self)
+    def unknow_command_handler(self, msg):
+        unknown_command_uid = msg.getContent().get('commandId')
+        self.unknown_command_list.append(unknown_command_uid)
+        for req_msg in self.request_pool.values():
+            if req_msg.getCommand() == unknown_command_uid:
+                msg = Message(id=req_msg.getId(), command=baseCommands.UNKNOWN)
+                self.message_pool.addMessage(msg)
+
+    def exec_command_sync(self, command):
+        msg = command.initial()
+        self.send_message(msg)
+
+        while True:
+            if msg.getId() in self.message_pool:
+                ans_msg = self.message_pool[msg.getId()]
+                self.request_pool.dellMessage(msg)
+                self.message_pool.dellMessage(ans_msg)
+
+                if ans_msg.getCommand() == baseCommands.UNKNOWN:
+                    return command.unknown(msg)
+
+                return command.answer(ans_msg)
+
+            time.sleep(1)
+
+    def exec_command_async(self, command):
+        def answer_handler():
+            while True:
+                if msg.getId() in self.message_pool:
+                    ans_msg = self.message_pool[msg.getId()]
+                    self.request_pool.dellMessage(msg)
+                    self.message_pool.dellMessage(ans_msg)
+
+                    if ans_msg.getCommand() == baseCommands.UNKNOWN:
+                        command.unknown(msg)
+                        return
+
+                    command.answer(ans_msg)
+                    return
+                time.sleep(1)
+
+        msg = command.initial()
+        self.send_message(msg)
+
+        listener_thread = Thread(target=answer_handler)
+        listener_thread.start()
 
     def main_listener(self):
         while self.isRunning:
@@ -81,6 +128,8 @@ class StrongClient:
                     # TODO Это команда с той стороны, её нужно прям тут и обработать!
                     if msg.getCommand() == baseCommands.PROTOCOL_COMPATIBLE:
                         self.protocol_compatible_handler(msg)
+                    elif msg.getCommand() == baseCommands.UNKNOWN:
+                        self.unknow_command_handler(msg)
                 else:
                     # Это команда / ответ, который нужно обработать
                     self.message_pool.addMessage(msg)

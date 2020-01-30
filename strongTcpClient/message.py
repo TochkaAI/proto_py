@@ -10,6 +10,18 @@ class Message(dict):
 
     def __str__(self):
         res = []
+
+        # Определимся с типом сообщения
+        type_name = Type.Unknown
+        type_value = self.getType()
+        if type_value == Type.Command:
+            type_name = 'Command'
+        elif type_value == Type.Answer:
+            type_name = 'Answer'
+        elif type_value == Type.Event:
+            type_name = 'Event'
+        res.append(f'Type: {type_name}')
+
         for field in self:
             if field in ['command']: continue
             res.append(f'{field}: {self[field]}')
@@ -26,7 +38,7 @@ class Message(dict):
 
         if command is not None:
             comm_name = getCommandName(command)
-            if comm_name != 'UNKNOWN':
+            if comm_name is not None:
                 self['command'] = command
                 self['Command'] = comm_name
             else:
@@ -39,7 +51,7 @@ class Message(dict):
         self['flags'].setFlagValue('type', type)
 
     def getType(self):
-        self['flags'].getFlagValue('type')
+        return self['flags'].getFlagValue('type')
 
     def setContent(self, content):
         self['content'] = content
@@ -50,6 +62,9 @@ class Message(dict):
 
     def getCommand(self):
         return self['command']
+
+    def getContent(self):
+        return self.get('content')
 
     def getBytes(self):
         result = dict()
@@ -78,4 +93,6 @@ class Message(dict):
         msg = Message(id=recieved_dict['id'], command=recieved_dict['command'])
         if recieved_dict.get('flags'):
             msg['flags'] = MsgFlag.fromDigit(recieved_dict.get('flags'))
+        if recieved_dict.get('content'):
+            msg['content'] = recieved_dict.get('content')
         return msg

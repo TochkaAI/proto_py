@@ -1,4 +1,5 @@
 import json
+import datetime
 from uuid import UUID, uuid4
 
 from strongTcpClient import baseCommands
@@ -23,7 +24,11 @@ def getCommandName(commandUuid):
         value = getattr(userCommands, comm_name)
         if tryUuid(value) and value == commandUuid:
             return comm_name
-    return 'UNKNOWN'
+    return None
+
+
+def dateTimeFromInt(intetime):
+    return datetime.datetime.fromtimestamp(intetime / 1e3)
 
 
 class Data(dict):
