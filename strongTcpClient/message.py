@@ -69,7 +69,13 @@ class Message(dict):
 
     def setContent(self, content):
         self['content'] = content
-        self['flags'].setFlagValue('contentIsEmpty', 0)
+        self['flags'].setFlagValue('contentIsEmpty', 0 if content else 1)
+
+    def setProtocolVersionLow(self, version):
+        self['protocolVersionLow'] = version
+
+    def setProtocolVersionHigh(self, version):
+        self['protocolVersionHigh'] = version
 
     def getId(self):
         return self['id']
@@ -109,6 +115,8 @@ class Message(dict):
     def getBytes(self):
         result = dict()
         for f in Message.TCP_FIELDS:
+            if f is None:
+                continue
             if f == 'flags':
                 result[f] = self[f].getDigit()
             elif f in self:

@@ -5,8 +5,6 @@ from strongTcpClient.messagePool import MessagePool
 
 class Connection:
     def __init__(self, socket_=None):
-        self.isRunning = False
-
         self.message_pool = MessagePool()
         self.request_pool = MessagePool()
 
@@ -26,6 +24,9 @@ class Connection:
 
     def connect(self, *args, **kwargs):
         return self.socket.connect(*args, **kwargs)
+
+    def close(self):
+        return self.socket.close()
 
     def msend(self, bdata):
         bdata_len = (len(bdata)).to_bytes(4, 'big')

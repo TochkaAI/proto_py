@@ -38,3 +38,7 @@ class BaseCommand:
     @staticmethod
     def timeout():
         raise Exception('Вышло время ожидания')
+
+    @staticmethod
+    def handler(client, msg):
+        raise Exception('не переопределена реализация методы обработки сообщения')

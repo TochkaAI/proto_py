@@ -9,6 +9,7 @@ logging.basicConfig(
 
 
 def write_info(msg):
+    print(msg)
     logging.info(msg)
 
 # def initLogging():

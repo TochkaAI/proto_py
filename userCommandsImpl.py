@@ -15,6 +15,11 @@ class command1(BaseCommand):
     def answer(client, msg):
         print('COMMAND_1 anwser handler released')
 
+    @staticmethod
+    def handler(client, msg):
+        anw = msg.getAnswerCopy()
+        client.sennd_message()
+
 
 class command2(BaseCommand):
     @staticmethod

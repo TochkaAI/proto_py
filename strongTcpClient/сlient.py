@@ -9,7 +9,7 @@ from strongTcpClient import baseCommands
 from strongTcpClient.connection import Connection
 from strongTcpClient.connectionPool import ConnectionPool
 from strongTcpClient.message import Message
-from strongTcpClient.baseCommandsImpl import CloseConnectionCommand
+from strongTcpClient.baseCommandsImpl import CloseConnectionCommand, ProtocolCompatibleCommand, UnknownCommand
 from strongTcpClient.tools import getCommandNameList, tryUuid
 
 
@@ -33,7 +33,7 @@ class StrongClient:
                 return comm_name[0]
         return None
 
-    def send_message(self, message, conn, need_answer=True):
+    def send_message(self, message, conn, need_answer=False):
         if message.getCommand() in self.unknown_command_list:
             # TODO: наверное стоит сделать своё исключение на это дело
             raise Exception('Попытка оптравки неизвестной команды!')
@@ -51,53 +51,15 @@ class StrongClient:
         if answer != bdata:
             raise TypeError('Удалённый сервер не согласовал тип протокола')
 
-    def protocol_compatible_req(self, connection):
-        msg = Message.command(self, baseCommands.PROTOCOL_COMPATIBLE)
-        msg['protocolVersionLow'] = config.protocolVersionLow
-        msg['protocolVersionHigh'] = config.protocolVersionHigh
-        self.send_message(msg, connection, need_answer=False)
-
-    def protocol_compatible_handler(self, msg):
-        def protocol_compatible(versionLow, versionHigh):
-            if versionHigh is None and versionLow is None:
-                # Видимо ничего не надо делать
-                return True
-            if versionLow > versionHigh:
-                return False
-            if versionHigh < config.protocolVersionLow:
-                return False
-            if versionLow > config.protocolVersionHigh:
-                return False
-            return True
-        if not config.checkProtocolVersion:
-            return
-        if not protocol_compatible(msg.get('protocolVersionLow'), msg.get('protocolVersionHigh')):
-            msg = f'Protocol versions incompatible. This protocol version: {config.protocolVersionLow}-{config.protocolVersionHigh}. ' \
-                  f'Remote protocol version: {msg.get("protocolVersionLow")}-{msg.get("protocolVersionHigh")}'
-            self.finish(code=0, description=msg, is_async=True)
-            # raise ProtocolIncompatibleEx(msg)
-
-    def close_connection_handler(self, msg):
-        self.send_message(msg.getAnswerCopy(), msg.my_connection, need_answer=False)
-        msg.my_connection.isRunning = False
-
-    def unknow_command_handler(self, msg):
-        unknown_command_uid = msg.getContent().get('commandId')
-        self.unknown_command_list.append(unknown_command_uid)
-        for req_msg in msg.my_connection.request_pool.values():
-            if req_msg.getCommand() == unknown_command_uid:
-                fake_msg = Message(self, id=req_msg.getId(), command=baseCommands.UNKNOWN)
-                msg.my_connection.message_pool.addMessage(fake_msg)
-
     def exec_command_sync(self, command, conn, *args, **kwargs):
         msg = command.initial(self, *args, **kwargs)
-        self.send_message(msg, conn)
+        self.send_message(msg, conn, need_answer=True)
 
         max_time_life = msg.getMaxTimeLife()
         t_end = None
         if max_time_life:
             t_end = time.time() + max_time_life
-        while True and conn.isRunning:
+        while True:
             if t_end and time.time() > t_end:
                 conn.request_pool.dellMessage(msg)
                 return command.timeout()
@@ -120,7 +82,7 @@ class StrongClient:
             t_end = None
             if max_time_life:
                 t_end = time.time() + max_time_life
-            while True and conn.isRunning:
+            while True:
                 if t_end and time.time() > t_end:
                     conn.request_pool.dellMessage(msg)
                     command.timeout()
@@ -140,29 +102,31 @@ class StrongClient:
                 time.sleep(1)
 
         msg = command.initial(self, *args, **kwargs)
-        self.send_message(msg, conn)
+        self.send_message(msg, conn, need_answer=True)
 
         listener_thread = Thread(target=answer_handler)
+        listener_thread.daemon = True
         listener_thread.start()
 
     def base_commands_handlers(self, msg):
         # Это команда с той стороны, её нужно прям тут и обработать!
         if msg.getCommand() == baseCommands.PROTOCOL_COMPATIBLE:
-            self.protocol_compatible_handler(msg)
+            ProtocolCompatibleCommand.handler(self, msg)
         elif msg.getCommand() == baseCommands.UNKNOWN:
-            self.unknow_command_handler(msg)
+            UnknownCommand.handler(self, msg)
         elif msg.getCommand() == baseCommands.CLOSE_CONNECTION:
-            self.close_connection_handler(msg)
+            CloseConnectionCommand.handler(self, msg)
 
     def user_commands_handlers(self, msg):
         pass
 
     def start_listening(self, connection):
         thread = Thread(target=self.command_listener, args=(connection,))
+        thread.daemon = True
         thread.start()
 
     def command_listener(self, connection):
-        while connection.isRunning:
+        while True:
             answer = connection.mrecv()
             if answer:
                 write_info(f'[{connection.getpeername()}] Msg JSON receeved: {answer}')
@@ -177,8 +141,6 @@ class StrongClient:
                 else:
                     # Это ответы, который нужно обработать
                     connection.message_pool.addMessage(msg)
-
-        write_info(f'Disconect from host: {self.ip}:{self.port}')
 
     def connect(self):
         ''' Порядок установки соединения '''
@@ -207,6 +169,7 @@ class StrongClient:
         serv_sock.listen(10)
 
         thread = Thread(target=self.connect_listener, args=(serv_sock, new_client_handler))
+        thread.daemon = True
         thread.start()
 
     def start(self, connection):
@@ -217,16 +180,11 @@ class StrongClient:
         self.send_hello(connection)
         ''' После того как сигнатуры протокола проверены клиент и сервер отправляют друг другу первое сообщение - 
             ProtocolCompatible.'''
-        self.protocol_compatible_req(connection)
-
-        connection.isRunning = True
+        self.exec_command_async(ProtocolCompatibleCommand, connection)
         self.start_listening(connection)
 
-    def finish(self, conn, code, description, is_async=False):
-        if not conn.isRunning:
-            return
-
-        if is_async:
-            self.exec_command_async(CloseConnectionCommand, conn, code, description)
-        else:
+    def finish_all(self, code, description):
+        for conn in self.connection_pool.values():
+            perr_name = conn.getpeername()
             self.exec_command_sync(CloseConnectionCommand, conn, code, description)
+            write_info(f'[{perr_name}] Disconect from host')

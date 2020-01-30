@@ -38,12 +38,11 @@ def like_client():
             else:
                 print('Unkwon command, pls reenter')
     finally:
-        connect_client.finish(1, 'Bye-Bye!')
+        connect_client.finish_all(1, 'Bye-Bye!')
 
 def like_server():
     connection = None
     def client_add_handler(conn):
-        print('lol it is work')
         nonlocal connection
         connection = conn
 
@@ -70,10 +69,11 @@ def like_server():
                 print('Unkwon command, pls reenter')
 
     finally:
-        listen_client.finish(1, 'Bye-Bye!')
+        listen_client.finish_all(1, 'Bye-Bye!')
+        pass
 
 if __name__ == '__main__':
-    # like_client()
-    like_server()
+    like_client()
+    # like_server()
 
     print('finish')
