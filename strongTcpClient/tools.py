@@ -2,9 +2,6 @@ import json
 import datetime
 from uuid import UUID, uuid4
 
-from strongTcpClient import baseCommands
-from strongTcpClient import userCommands
-
 
 def tryUuid(uuid):
     try:
@@ -13,18 +10,8 @@ def tryUuid(uuid):
         return None
 
 
-def getCommandName(commandUuid):
-    base_commands_list = [comm for comm in dir(baseCommands) if '__' not in comm]
-    for comm_name in base_commands_list:
-        value = getattr(baseCommands, comm_name)
-        if tryUuid(value) and value == commandUuid:
-            return comm_name
-    user_commands_list = [comm for comm in dir(userCommands) if '__' not in comm]
-    for comm_name in user_commands_list:
-        value = getattr(userCommands, comm_name)
-        if tryUuid(value) and value == commandUuid:
-            return comm_name
-    return None
+def getCommandNameList(module):
+    return [(comm, getattr(module, comm)) for comm in dir(module) if '__' not in comm]
 
 
 def dateTimeFromInt(intetime):
