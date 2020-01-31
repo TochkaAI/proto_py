@@ -49,11 +49,16 @@ def like_server():
         nonlocal connection
         connection = conn
 
+    def client_dis_handler(conn):
+        nonlocal connection
+        if conn == connection:
+            connection = None
+
     # А этот клиент будет слушать, и принимать входящие подключения
     listen_ip = '127.0.0.1'
     listen_port = 48063
     listening_worker = TcpServer(listen_ip, listen_port, userCommands, userCommandsImpl)
-    listening_worker.run(client_add_handler)
+    listening_worker.run(client_add_handler, client_dis_handler)
 
     try:
         while True:
@@ -74,7 +79,6 @@ def like_server():
 
     finally:
         listening_worker.stop()
-        pass
 
 if __name__ == '__main__':
     # like_client()

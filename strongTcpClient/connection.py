@@ -18,7 +18,7 @@ class Connection:
         if socket_ is None:
             socket_ = socket.socket()
 
-        self.socket = socket_
+        self.setSocket(socket_)
 
     def setSocket(self, socket_):
         self.socket = socket_
@@ -30,7 +30,7 @@ class Connection:
         return self.socket.send(bdata)
 
     def connect(self, *args, **kwargs):
-        return self.socket.connect(*args, **kwargs)
+        self.socket.connect(*args, **kwargs)
 
     def close(self):
         return self.socket.close()
@@ -68,8 +68,6 @@ class Connection:
         write_info(f'[{self.getpeername()}] Msg JSON send: {message.getBytes().decode()}')
         if need_answer:
             self.request_pool.addMessage(message)
-
-
 
     def exec_cmmand(self, command, *args, **kwargs):
         msg = command.initial(self.worker, *args, **kwargs)

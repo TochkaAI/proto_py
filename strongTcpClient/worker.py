@@ -19,11 +19,15 @@ class TcpWorker:
         self.port = port
 
         self.connection_pool = ConnectionPool()
+        self.disconection_handler = None
 
         self.base_commands_list = getCommandStruct(baseCommands, baseCommandsImpl)
         self.user_commands_list = getCommandStruct(client_commands, client_command_impl)
 
         self.unknown_command_list = []
+
+    def setDisconectionHandler(self, handler):
+        self.disconection_handler = handler
 
     def getCommandName(self, commandUuid):
         commands_list = {**self.base_commands_list, **self.user_commands_list}
@@ -72,6 +76,14 @@ class TcpWorker:
                 else:
                     # Это ответы, который нужно обработать
                     connection.message_pool.addMessage(msg)
+            else:
+                # ЭТО означает что сервер разорвал соединение! о боги! это было так просто, почему яя этого не знал?
+                break
+        # соответственно если я тут, значит у нас произошёл разрыв соединения
+        self.connection_pool.remConnection(connection)
+        connection.close()
+        if self.disconection_handler is not None:
+            self.disconection_handler(connection)
 
     def start(self, connection):
         self.connection_pool.addConnection(connection)
@@ -86,8 +98,7 @@ class TcpWorker:
 
     def finish_all(self, code, description):
         for conn in self.connection_pool.values():
-            if conn.fileno() == -1:
-                continue
             perr_name = conn.getpeername()
             conn.exec_command_sync(CloseConnectionCommand, code, description)
+            conn.close()
             write_info(f'[{perr_name}] Disconect from host')
