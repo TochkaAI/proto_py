@@ -69,6 +69,8 @@ class Connection:
         if need_answer:
             self.request_pool.addMessage(message)
 
+
+
     def exec_cmmand(self, command, *args, **kwargs):
         msg = command.initial(self.worker, *args, **kwargs)
         self.worker.send_message(msg, self)

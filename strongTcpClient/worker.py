@@ -9,7 +9,7 @@ from strongTcpClient.baseCommandsImpl import ProtocolCompatibleCommand, CloseCon
 from strongTcpClient.connection import Connection
 from strongTcpClient.connectionPool import ConnectionPool
 from strongTcpClient.message import Message
-from strongTcpClient.tools import tryUuid, getCommandStruct
+from strongTcpClient.tools import getCommandStruct
 from strongTcpClient.const import JSON_PROTOCOL_FORMAT
 
 
@@ -72,36 +72,6 @@ class TcpWorker:
                 else:
                     # Это ответы, который нужно обработать
                     connection.message_pool.addMessage(msg)
-
-    def connect(self):
-        ''' Порядок установки соединения '''
-        connection = Connection(self)
-        try:
-            connection.connect((self.ip, self.port))
-        except ConnectionRefusedError as ex:
-            write_info('Не удалось, установить соединение, удалённый сервер не доступен')
-            return
-        self.start(connection)
-        return connection
-
-    def connect_listener(self, serv_sock, new_client_handler):
-        while True:
-            sock, adr = serv_sock.accept()
-            conn = Connection(self, sock)
-            write_info(f'{conn.getpeername()} - was connected')
-            self.start(conn)
-
-            if new_client_handler:
-                new_client_handler(conn)
-
-    def listen(self, new_client_handler=None):
-        serv_sock = socket.socket()
-        serv_sock.bind((self.ip, self.port))
-        serv_sock.listen(10)
-
-        thread = Thread(target=self.connect_listener, args=(serv_sock, new_client_handler))
-        thread.daemon = True
-        thread.start()
 
     def start(self, connection):
         self.connection_pool.addConnection(connection)

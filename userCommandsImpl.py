@@ -63,6 +63,12 @@ class command3(BaseCommand):
         if content:
             print(content.get('value1'))
 
+    @staticmethod
+    def handler(client, msg):
+        print(f'COMMAND 3 HANDREL RELEASED')
+        print(f'msg {msg} was recieved')
+
+
 class command4(BaseCommand):
     COMMAND_UUID = COMMAND_4
     @staticmethod
