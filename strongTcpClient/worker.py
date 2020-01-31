@@ -3,7 +3,6 @@ import uuid
 from threading import Thread
 import time
 
-from strongTcpClient import config
 from strongTcpClient.logger import write_info
 from strongTcpClient import baseCommands
 from strongTcpClient.connection import Connection
@@ -13,7 +12,7 @@ from strongTcpClient.baseCommandsImpl import CloseConnectionCommand, ProtocolCom
 from strongTcpClient.tools import getCommandNameList, tryUuid
 
 
-class StrongClient:
+class TcpWorker:
     def __init__(self, ip, port, client_commands=[]):
         self.ip = ip
         self.port = port
