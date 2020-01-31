@@ -2,6 +2,8 @@ import json
 import datetime
 from uuid import UUID, uuid4
 
+from strongTcpClient.badSituations import NotImplementedCommand
+
 
 def tryUuid(uuid):
     try:
@@ -10,8 +12,21 @@ def tryUuid(uuid):
         return None
 
 
-def getCommandNameList(module):
-    return [(comm, getattr(module, comm)) for comm in dir(module) if '__' not in comm]
+def getCommandByUUID(module, UUID):
+    for cls in dir(module):
+        obj = getattr(module, cls)
+        if hasattr(obj, 'COMMAND_UUID') and getattr(obj, 'COMMAND_UUID') == UUID:
+            return obj
+    raise NotImplementedCommand(f'command {UUID} not implemented')
+
+
+def getCommandStruct(module, moduleImpl):
+    struct = {}
+    for field in dir(module):
+        if tryUuid(getattr(module, field)):
+            uuid = getattr(module, field)
+            struct[uuid] = (field, uuid, getCommandByUUID(moduleImpl, uuid))
+    return struct
 
 
 def dateTimeFromInt(intetime):

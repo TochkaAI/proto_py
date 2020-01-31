@@ -1,6 +1,11 @@
 from strongTcpClient import config
-from strongTcpClient.baseCommands import BaseCommand, CLOSE_CONNECTION, PROTOCOL_COMPATIBLE, UNKNOWN
+from strongTcpClient.baseCommands import BaseCommand, CLOSE_CONNECTION, PROTOCOL_COMPATIBLE, UNKNOWN, ERROR
 from strongTcpClient.message import Message
+
+
+class Error(BaseCommand):
+    COMMAND_UUID = ERROR
+
 
 class CloseConnectionCommand(BaseCommand):
     COMMAND_UUID = CLOSE_CONNECTION

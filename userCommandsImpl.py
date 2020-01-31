@@ -6,6 +6,7 @@ from strongTcpClient.tools import dateTimeFromInt
 
 
 class command1(BaseCommand):
+    COMMAND_UUID = COMMAND_1
     @staticmethod
     def initial(client):
         msg = Message.command(client, COMMAND_1)
@@ -17,11 +18,14 @@ class command1(BaseCommand):
 
     @staticmethod
     def handler(client, msg):
-        anw = msg.getAnswerCopy()
-        client.sennd_message()
+        print('COMMAND_1 handler released')
+        ans = msg.getAnswerCopy()
+        msg.my_connection.send_message(ans)
+        print('SEND ANSWER BACK')
 
 
 class command2(BaseCommand):
+    COMMAND_UUID = COMMAND_2
     @staticmethod
     def initial(client):
         msg = Message.command(client, COMMAND_2)
@@ -36,8 +40,17 @@ class command2(BaseCommand):
     def answer(client, msg):
         print('COMMAND_2 anwser handler released')
 
+    @staticmethod
+    def handler(client, msg):
+        ans = msg.getAnswerCopy()
+        content = ans.getContent()
+        content['message'] = 'GO BACK SOME TEXT'
+        ans.setContent(content)
+        msg.my_connection.send_message(ans)
+
 
 class command3(BaseCommand):
+    COMMAND_UUID = COMMAND_3
     @staticmethod
     def initial(client):
         msg = Message.command(client, COMMAND_3)
@@ -51,6 +64,7 @@ class command3(BaseCommand):
             print(content.get('value1'))
 
 class command4(BaseCommand):
+    COMMAND_UUID = COMMAND_4
     @staticmethod
     def initial(client):
         msg = Message.command(client, COMMAND_4)
@@ -66,6 +80,7 @@ class command4(BaseCommand):
 
 
 class command5(BaseCommand):
+    COMMAND_UUID = COMMAND_5
     @staticmethod
     def initial(client):
         msg = Message.command(client, COMMAND_5)
@@ -81,6 +96,7 @@ class command5(BaseCommand):
 
 
 class commandU(BaseCommand):
+    COMMAND_UUID = COMMAND_U
     @staticmethod
     def initial(client):
         msg = Message.command(client, COMMAND_U)
@@ -93,6 +109,7 @@ class commandU(BaseCommand):
 
 
 class command6(BaseCommand):
+    COMMAND_UUID = COMMAND_6
     @staticmethod
     def initial(client):
         msg = Message.command(client, COMMAND_6)
@@ -107,6 +124,7 @@ class command6(BaseCommand):
 
 
 class command7(BaseCommand):
+    COMMAND_UUID = COMMAND_7
     @staticmethod
     def initial(client, timelife):
         msg = Message.command(client, COMMAND_7)

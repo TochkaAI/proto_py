@@ -1,14 +1,15 @@
-from strongTcpClient.сlient import StrongClient
-from strongTcpClient.tools import getCommandNameList
-from userCommandsImpl import command1, command2, command3, command4, command5, commandU, command6, command7
 import userCommands
+import userCommandsImpl
+from strongTcpClient.worker import TcpWorker
+from userCommandsImpl import command1, command2, command3, command4, command5, commandU, command6, command7
+
 
 def like_client():
     # Этот клиент будет подключаться
     ip_to_connect = '127.0.0.1'
     port_to_connect = 48062
-    connect_client = StrongClient(ip_to_connect, port_to_connect, getCommandNameList(userCommands))
-    connection = connect_client.connect()
+    tcp_worker = TcpWorker(ip_to_connect, port_to_connect, userCommands, userCommandsImpl)
+    connection = tcp_worker.connect()
 
     try:
         while True:
@@ -16,29 +17,30 @@ def like_client():
             if value == 'exit':
                 break
             elif value == 'cmd1':
-                connect_client.exec_command_async(command1, connection)
+                connection.exec_command_async(command1)
             elif value == 'cmd2':
-                connect_client.exec_command_sync(command2, connection)
+                connection.exec_command_sync(command2)
             elif value == 'cmd3':
-                connect_client.exec_command_async(command3, connection)
+                connection.exec_command_async(command3)
             elif value == 'cmd4':
-                connect_client.exec_command_async(command4, connection)
+                connection.exec_command_async(command4)
             elif value == 'cmd5':
-                connect_client.exec_command_async(command5, connection)
+                connection.exec_command_async(command5)
             elif value == 'cmdu':
-                connect_client.exec_command_async(commandU, connection)
+                connection.exec_command_async(commandU)
             elif value == 'cmd6':
-                connect_client.exec_command_async(command6, connection)
+                connection.exec_command_async(command6)
             elif value == 'c7':
-                connect_client.exec_command_sync(command7, connection, 5)
+                connection.exec_command_sync(command7, 5)
 
             elif value == 'info':
-                print(connect_client.connection_pool.info())
+                print(tcp_worker.connection_pool.info())
+                print(tcp_worker.user_commands_list)
 
             else:
                 print('Unkwon command, pls reenter')
     finally:
-        connect_client.finish_all(1, 'Bye-Bye!')
+        tcp_worker.finish_all(1, 'Bye-Bye!')
 
 def like_server():
     connection = None
@@ -49,8 +51,8 @@ def like_server():
     # А этот клиент будет слушать, и принимать входящие подключения
     listen_ip = '127.0.0.1'
     listen_port = 48063
-    listen_client = StrongClient(listen_ip, listen_port, getCommandNameList(userCommands))
-    listen_client.listen(client_add_handler)
+    listening_worker = TcpWorker(listen_ip, listen_port, userCommands, userCommandsImpl)
+    listening_worker.listen(client_add_handler)
 
     try:
         while True:
@@ -58,10 +60,11 @@ def like_server():
             if value == 'exit':
                 break
             elif value == 'info':
-                print(listen_client.connection_pool.info())
+                print(listening_worker.connection_pool.info())
+                print(listening_worker.user_commands_list)
             elif value == 'cmd1':
                 if connection:
-                    listen_client.exec_command_async(command1, connection)
+                    connection.exec_command_async(command1)
                 else:
                     print('некому отправлять!')
 
@@ -69,11 +72,11 @@ def like_server():
                 print('Unkwon command, pls reenter')
 
     finally:
-        listen_client.finish_all(1, 'Bye-Bye!')
+        listening_worker.finish_all(1, 'Bye-Bye!')
         pass
 
 if __name__ == '__main__':
-    like_client()
-    # like_server()
+    # like_client()
+    like_server()
 
     print('finish')

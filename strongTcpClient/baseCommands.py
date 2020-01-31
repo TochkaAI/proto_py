@@ -3,8 +3,6 @@
 '''
 import sys
 
-JSON_PROTOCOL_FORMAT = 'fea6b958-dafb-4f5c-b620-fe0aafbd47e2'
-
 Unknown = "UNKNOWN"
 Error = "ERROR"
 ProtocolCompatible = "PROTOCOL_COMPATIBLE"
@@ -42,3 +40,5 @@ class BaseCommand:
     @staticmethod
     def handler(client, msg):
         raise Exception('не переопределена реализация методы обработки сообщения')
+
+
