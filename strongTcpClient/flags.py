@@ -1,3 +1,4 @@
+'''Список неймспейсов для описания существующих типов флагов'''
 class SocketType:
     Unknown = 0
     Local = 1
@@ -57,6 +58,7 @@ class Compression:
 
 
 class FlagField:
+    '''вспоомгательная структура для хранения информации о конкретном флаге'''
     def __init__(self, name, size, value):
         self.name = name
         self.size = size
@@ -64,8 +66,9 @@ class FlagField:
 
 
 class MsgFlag:
+    '''структура для хранения информации о всех флагах сообщения'''
     def __str__(self):
-        return str(self.getDigit())
+        return str(self.get_digit())
 
     def __init__(self):
         self.values = [
@@ -90,26 +93,33 @@ class MsgFlag:
             FlagField('flags2IsEmpty', 1, 0),
         ]
 
-    def setFlagValue(self, name, value):
+    def set_flag_value(self, name, value):
+        '''установить значение конкретного флага, принимает имя и значение, првоеряет допустимую величину для флага'''
         for f in self.values:
             if f.name == name:
                 if 2 ** f.size - 1 <= value:
                     raise ValueError('Превышено допустимое значение для флага')
                 f.value = value
 
-    def getFlagValue(self, name):
+    def get_flag_value(self, name) -> int:
         for f in self.values:
             if f.name == name:
                 return f.value
 
-    def getDigit(self):
+    def get_digit(self) -> int:
+        '''серилизует значение структуры хранения данных о флаге в число, которое потом можно конвертнуть
+         в байтовое представление и отправить по сети'''
         res = ''
         for field in reversed(self.values):
+            # число значения флага превращает в бинарное представление с ведущими нулями
             res += bin(field.value)[2:].zfill(field.size)
+        # из строки вида "01010101" получаем число
         return int(res, 2)
 
     @staticmethod
-    def fromDigit(digit):
+    def from_digit(digit):
+        '''из числа серрилизует в структуру хранения данных флагов
+        операция обратная операции get_digit'''
         b_string = bin(digit)[2:].zfill(8 * 4)
         flag = MsgFlag()
         for f in reversed(flag.values):

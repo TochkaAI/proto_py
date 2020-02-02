@@ -2,20 +2,33 @@ import json
 from copy import copy
 from uuid import uuid4
 
+from strongTcpClient.badSituations import NotConnectionException
+from strongTcpClient.logger import write_info
 from strongTcpClient.tools import tryUuid
 from strongTcpClient.flags import MsgFlag, Type
 
 
 class Message(dict):
+    '''Объект серриализация которого "летает" по сети
+    он хранит в себе всю необходимую информаци о пакете который мы хотим отправить по сети
+    Ид
+    Тип
+    Команду
+    Контент
+    Тэги
+    Флаги
+    Мин\Макс время жизни
+    '''
     TCP_FIELDS = ['id', 'command', 'flags', 'content', 'protocolVersionLow',
                   'protocolVersionHigh', 'tags', 'maxTimeLife']
 
     def __str__(self):
+        '''Метод для серриализации в строку для записи объекта в логах'''
         res = []
 
         # Определимся с типом сообщения
         type_name = Type.Unknown
-        type_value = self.getType()
+        type_value = self.get_type()
         if type_value == Type.Command:
             type_name = 'Command'
         elif type_value == Type.Answer:
@@ -29,9 +42,15 @@ class Message(dict):
             res.append(f'{field}: {self[field]}')
         return ', '.join(res)
 
-    def __init__(self, client, conn=None, id=None, command=None):
-        self.my_client = client
+    def __init__(self, worker, conn=None, id=None, command=None):
+        # обязательное поле для меседжа это воркер. только у воркреа есть информация о доступных командах, без него месседж не может существовать
+        # TODO: стоит подумать о том, что месседж может создавать сам воркер, типа у воркера сделать методы гет месседж, гет ансвер и т.п.
+        self.my_worker = worker
+        # когда месседж создаётся во время приёма его из сети, то ему сразу омжно проставить конекцию,
+        # в противном случае она будет проставлена во время отправки из самой конекции
+        # иначе говоря, месседж может существовать без конекции только до момента "путеществия по сети"
         self.my_connection = conn
+        # ид или создаётся, если это инициализация нового сообщения, или задаётся, если это парсинг сообщения из сети
         if id is not None:
             if tryUuid(id):
                 self['id'] = id
@@ -40,53 +59,55 @@ class Message(dict):
         else:
             self['id'] = str(uuid4())
 
+        # если при создании передан уид команды, сразу проверим зарегистрирована ли такая команда,
+        # и пропишем всю информацию в объекте
         if command is not None:
-            comm_name = self.my_client.getCommandName(command)
+            comm_name = self.my_worker.getCommandName(command)
             if comm_name is not None:
                 self['command'] = command
                 self['Command'] = comm_name
             else:
                 raise ValueError('Неизвестный идентификатор команды')
 
+        # так же месседж не может существовать без флагов, при создании они инициализируются дефолтными значениями
         self['flags'] = MsgFlag()
 
-    def setConnection(self, conn):
+    '''Кучка сеттеров и геттеров, для более симпатичного обращения со стороны пользователя'''
+    '''==================================================================================='''
+    def set_connection(self, conn):
         self.my_connection = conn
 
-    def getCopy(self):
-        return copy(self)
-
-    def getAnswerCopy(self):
-        answer = self.getCopy()
-        answer.setType(Type.Answer)
+    def get_answer_copy(self):
+        answer = copy(self)
+        answer.set_type(Type.Answer)
         return answer
 
-    def setType(self, type):
-        self['flags'].setFlagValue('type', type)
+    def set_type(self, type):
+        self['flags'].set_flag_value('type', type)
 
-    def getType(self):
-        return self['flags'].getFlagValue('type')
+    def get_type(self):
+        return self['flags'].get_flag_value('type')
 
-    def setContent(self, content):
+    def set_content(self, content):
         self['content'] = content
-        self['flags'].setFlagValue('contentIsEmpty', 0 if content else 1)
+        self['flags'].set_flag_value('contentIsEmpty', 0 if content else 1)
 
-    def setProtocolVersionLow(self, version):
+    def set_protocol_version_low(self, version):
         self['protocolVersionLow'] = version
 
-    def setProtocolVersionHigh(self, version):
+    def set_protocol_version_high(self, version):
         self['protocolVersionHigh'] = version
 
-    def getId(self):
+    def get_id(self):
         return self['id']
 
-    def getCommand(self):
+    def get_command(self):
         return self['command']
 
-    def getContent(self):
+    def get_content(self):
         return self.get('content')
 
-    def setTag(self, value, num):
+    def set_tag(self, value, num):
         tags = self.get('tags')
         if not tags:
             tags = [0] * (num+1)
@@ -106,44 +127,63 @@ class Message(dict):
         # TODO сделать логирование ошибочного поведения
         return 0
 
-    def setMaxTimeLife(self, max_time_life):
+    def set_max_time_life(self, max_time_life):
         self['maxTimeLife'] = max_time_life
 
-    def getMaxTimeLife(self):
+    def get_max_time_life(self):
         return self.get('maxTimeLife')
 
-    def getBytes(self):
+    def get_bytes(self):
         result = dict()
         for f in Message.TCP_FIELDS:
             if f is None:
                 continue
             if f == 'flags':
-                result[f] = self[f].getDigit()
+                result[f] = self[f].get_digit()
             elif f in self:
                 result[f] = self[f]
         return json.dumps(result).encode()
+    '''===========Конец кучки сеттеров и геттеров========================================='''
+    '''==================================================================================='''
 
+    def send_message(self):
+        '''В случае если нужно отправить ответ на команду, у нас есть все данные и о воркере и о конеции
+        можно использовать метод send_message от объекта Message
+        В ином случае, нужно отправлять сообщение используя метод Connection::send_message'''
+        if self.get_type() == Type.Answer and self.my_connection is not None:
+            self.my_connection.msend(self.get_bytes())
+            write_info(f'[{self.my_connection.getpeername()}] Msg JSON send: {self.get_bytes().decode()}')
+        else:
+            raise NotConnectionException('отсутсвует коннекцию, отправка невозможна')
+
+    '''кучка статических методов для создания наиболее популярных типов месседжов
+    с некими пресетами свойств(флагов, типов, контентов и т.п.'''
     @staticmethod
-    def command(client, commandUuid):
-        msg = Message(client, command=commandUuid)
-        msg.setType(Type.Command)
+    def command(client, command_uuid):
+        '''Статический метод создания месседжа с типом команды'''
+        msg = Message(client, command=command_uuid)
+        msg.set_type(Type.Command)
         return msg
 
     @staticmethod
     def answer(client, commandUuid):
+        '''Статический метод создания месседжа с типом ответ'''
         msg = Message(client, command=commandUuid)
-        msg.setType(Type.Answer)
+        msg.set_type(Type.Answer)
         return msg
+    '''Конец кучки'''
 
     @staticmethod
-    def fromString(client, string_msg, conn):
+    def from_string(worker, string_msg, conn):
+        '''статический медо дессериализации меседжа из json строки приходящей из "сети"'''
+        # TODO перенести этот метод или в воркера или в конекцию
         recieved_dict = json.loads(string_msg)
-        msg = Message(client, id=recieved_dict['id'], command=recieved_dict['command'])
+        msg = Message(worker, id=recieved_dict['id'], command=recieved_dict['command'])
         if recieved_dict.get('flags'):
-            msg['flags'] = MsgFlag.fromDigit(recieved_dict.get('flags'))
+            msg['flags'] = MsgFlag.from_digit(recieved_dict.get('flags'))
         for key in ['content', 'tags', 'maxTimeLife', 'protocolVersionLow', 'protocolVersionHigh']:
             if recieved_dict.get(key):
                 msg[key] = recieved_dict.get(key)
 
-        msg.setConnection(conn)
+        msg.set_connection(conn)
         return msg

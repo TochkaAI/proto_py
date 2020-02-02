@@ -8,19 +8,19 @@ from strongTcpClient.tools import dateTimeFromInt
 class command1(BaseCommand):
     COMMAND_UUID = COMMAND_1
     @staticmethod
-    def initial(client):
-        msg = Message.command(client, COMMAND_1)
+    def initial(worker):
+        msg = Message.command(worker, COMMAND_1)
         return msg
 
     @staticmethod
-    def answer(client, msg):
+    def answer(worker, msg):
         print('COMMAND_1 anwser handler released')
 
     @staticmethod
-    def handler(client, msg):
+    def handler(worker, msg):
         print('COMMAND_1 handler released')
-        ans = msg.getAnswerCopy()
-        msg.my_connection.send_message(ans)
+        ans = msg.get_answer_copy()
+        ans.send_message()
         print('SEND ANSWER BACK')
 
 
@@ -29,7 +29,7 @@ class command2(BaseCommand):
     @staticmethod
     def initial(client):
         msg = Message.command(client, COMMAND_2)
-        msg.setContent(dict(
+        msg.set_content(dict(
             message="Test message",
             valueInt=10,
             valueDbl=1.256
@@ -42,11 +42,11 @@ class command2(BaseCommand):
 
     @staticmethod
     def handler(client, msg):
-        ans = msg.getAnswerCopy()
-        content = ans.getContent()
+        ans = msg.get_answer_copy()
+        content = ans.get_content()
         content['message'] = 'GO BACK SOME TEXT'
-        ans.setContent(content)
-        msg.my_connection.send_message(ans)
+        ans.set_content(content)
+        ans.send_message()
 
 
 class command3(BaseCommand):
@@ -59,7 +59,7 @@ class command3(BaseCommand):
     @staticmethod
     def answer(client, msg):
         print(f'COMMAND_3 anwser handler released with msg: {msg}')
-        content = msg.getContent()
+        content = msg.get_content()
         if content:
             print(content.get('value1'))
 
@@ -77,7 +77,7 @@ class command4(BaseCommand):
         content = dict(
             id=123
         )
-        msg.setContent(content)
+        msg.set_content(content)
         return msg
 
     @staticmethod
@@ -95,7 +95,7 @@ class command5(BaseCommand):
     @staticmethod
     def answer(client, msg):
         print(f'COMMAND_5 anwser handler released with msg: {msg}')
-        content = msg.getContent()
+        content = msg.get_content()
         if content:
             print(dateTimeFromInt(content.get('dtCurrent')))
             print(dateTimeFromInt(content.get('dtFixed')))
@@ -106,7 +106,7 @@ class commandU(BaseCommand):
     @staticmethod
     def initial(client):
         msg = Message.command(client, COMMAND_U)
-        print(f'unknownMsgId: {msg.getId()}')
+        print(f'unknownMsgId: {msg.get_id()}')
         return msg
 
     @staticmethod
@@ -119,9 +119,9 @@ class command6(BaseCommand):
     @staticmethod
     def initial(client):
         msg = Message.command(client, COMMAND_6)
-        msg.setTag(10, 0)
-        msg.setTag(56, 5)
-        msg.setTag(25, 108)
+        msg.set_tag(10, 0)
+        msg.set_tag(56, 5)
+        msg.set_tag(25, 108)
         return msg
 
     @staticmethod
@@ -134,7 +134,7 @@ class command7(BaseCommand):
     @staticmethod
     def initial(client, timelife):
         msg = Message.command(client, COMMAND_7)
-        msg.setMaxTimeLife(timelife)
+        msg.set_max_time_life(timelife)
         return msg
 
     @staticmethod

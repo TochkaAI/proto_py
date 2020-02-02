@@ -17,7 +17,7 @@ class CloseConnectionCommand(BaseCommand):
             code=code,
             description=desc
         )
-        msg.setContent(content)
+        msg.set_content(content)
         return msg
 
     @staticmethod
@@ -27,8 +27,8 @@ class CloseConnectionCommand(BaseCommand):
 
     @staticmethod
     def handler(client, msg):
-        answer = msg.getAnswerCopy()
-        answer.setContent(None);
+        answer = msg.get_answer_copy()
+        answer.set_content(None);
         client.send_message(answer, msg.my_connection)
         msg.my_connection.close()
 
@@ -39,8 +39,8 @@ class ProtocolCompatibleCommand(BaseCommand):
     @staticmethod
     def initial(client):
         msg = Message.command(client, PROTOCOL_COMPATIBLE)
-        msg.setProtocolVersionHigh(config.protocolVersionLow)
-        msg.setProtocolVersionLow(config.protocolVersionHigh)
+        msg.set_protocol_version_high(config.protocolVersionLow)
+        msg.set_protocol_version_low(config.protocolVersionHigh)
         return msg
 
     @staticmethod
@@ -84,9 +84,9 @@ class UnknownCommand(BaseCommand):
 
     @staticmethod
     def handler(client, msg):
-        unknown_command_uid = msg.getContent().get('commandId')
+        unknown_command_uid = msg.get_content().get('commandId')
         client.unknown_command_list.append(unknown_command_uid)
         for req_msg in msg.my_connection.request_pool.values():
-            if req_msg.getCommand() == unknown_command_uid:
-                fake_msg = Message(client, id=req_msg.getId(), command=UNKNOWN)
+            if req_msg.get_command() == unknown_command_uid:
+                fake_msg = Message(client, id=req_msg.get_id(), command=UNKNOWN)
                 msg.my_connection.message_pool.addMessage(fake_msg)

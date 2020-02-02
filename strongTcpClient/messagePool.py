@@ -3,10 +3,10 @@ class MessagePool(dict):
         pass
 
     def addMessage(self, message):
-        self[message.getId()] = message
+        self[message.get_id()] = message
 
     def dellMessage(self, message):
-        if message.getId() in self:
-            del(self[message.getId()])
+        if message.get_id() in self:
+            del(self[message.get_id()])
         else:
             raise KeyError('Сообщение отсутвует в очереди')

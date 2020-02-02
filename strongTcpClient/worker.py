@@ -44,16 +44,16 @@ class TcpWorker:
 
     def base_commands_handlers(self, msg):
         # Это команда с той стороны, её нужно прям тут и обработать!
-        if msg.getCommand() == baseCommands.PROTOCOL_COMPATIBLE:
+        if msg.get_command() == baseCommands.PROTOCOL_COMPATIBLE:
             ProtocolCompatibleCommand.handler(self, msg)
-        elif msg.getCommand() == baseCommands.UNKNOWN:
+        elif msg.get_command() == baseCommands.UNKNOWN:
             UnknownCommand.handler(self, msg)
-        elif msg.getCommand() == baseCommands.CLOSE_CONNECTION:
+        elif msg.get_command() == baseCommands.CLOSE_CONNECTION:
             CloseConnectionCommand.handler(self, msg)
 
     def user_commands_handlers(self, msg):
-        command = self.user_commands_list[msg.getCommand()][2]
-        command.handler(msg.my_client, msg)
+        command = self.user_commands_list[msg.get_command()][2]
+        command.handler(msg.my_worker, msg)
 
     def start_listening(self, connection):
         thread = Thread(target=self.command_listener, args=(connection,))
@@ -65,11 +65,11 @@ class TcpWorker:
             answer = connection.mrecv()
             if answer:
                 write_info(f'[{connection.getpeername()}] Msg JSON receeved: {answer}')
-                msg = Message.fromString(self, answer, connection)
+                msg = Message.from_string(self, answer, connection)
                 write_info(f'[{connection.getpeername()}] Msg received: {msg}')
-                if msg.getId() not in connection.request_pool:
+                if msg.get_id() not in connection.request_pool:
                     # Это команды
-                    if msg.getCommand() in self.base_commands_list:
+                    if msg.get_command() in self.base_commands_list:
                         self.base_commands_handlers(msg)
                     else:
                         self.user_commands_handlers(msg)
