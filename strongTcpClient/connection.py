@@ -1,8 +1,10 @@
 import socket
 import time
+import uuid
 from threading import Thread
 
 from strongTcpClient import baseCommands
+from strongTcpClient.const import JSON_PROTOCOL_FORMAT
 from strongTcpClient.messagePool import MessagePool
 from strongTcpClient.logger import write_info
 from strongTcpClient.badSituations import UnknownCommandSend
@@ -68,6 +70,15 @@ class Connection:
         '''обёртка над сокетом'''
         return self.socket.fileno()
 
+    def send_hello(self):
+        '''метод отправки первичного приветсвия, заключается в том,
+        чтобы в битовом представлении отправить UUID протокола по которому планируем общаться'''
+        bdata = uuid.UUID(JSON_PROTOCOL_FORMAT).bytes
+        self.send(bdata)
+        answer = self.recv(16, timeout=3)
+        if answer != bdata:
+            raise TypeError('Удалённый сервер не согласовал тип протокола')
+
     def send_message(self, message, need_answer=False):
         '''метод отправки сущности сообщение
         во первых этот метод следит за тем чтобы отправляемая команда не было в списке неизвестных
@@ -83,7 +94,7 @@ class Connection:
         self.msend(message.get_bytes())
         write_info(f'[{self.getpeername()}] Msg JSON send: {message.get_bytes().decode()}')
         if need_answer:
-            self.request_pool.addMessage(message)
+            self.request_pool.add_message(message)
 
     def exec_command(self, command, *args, **kwargs):
         '''подразумевается что это метод для пользователя
@@ -105,13 +116,13 @@ class Connection:
             t_end = time.time() + max_time_life
         while True:
             if t_end and time.time() > t_end:
-                self.request_pool.dellMessage(msg)
+                self.request_pool.dell_message(msg)
                 return command.timeout()
 
             if msg.get_id() in self.message_pool:
                 ans_msg = self.message_pool[msg.get_id()]
-                self.request_pool.dellMessage(msg)
-                self.message_pool.dellMessage(ans_msg)
+                self.request_pool.dell_message(msg)
+                self.message_pool.dell_message(ans_msg)
 
                 if ans_msg.get_command() == baseCommands.UNKNOWN:
                     return command.unknown(msg)
@@ -130,14 +141,14 @@ class Connection:
                 t_end = time.time() + max_time_life
             while True:
                 if t_end and time.time() > t_end:
-                    self.request_pool.dellMessage(msg)
+                    self.request_pool.dell_message(msg)
                     command.timeout()
                     return
 
                 if msg.get_id() in self.message_pool:
                     ans_msg = self.message_pool[msg.get_id()]
-                    self.request_pool.dellMessage(msg)
-                    self.message_pool.dellMessage(ans_msg)
+                    self.request_pool.dell_message(msg)
+                    self.message_pool.dell_message(ans_msg)
 
                     if ans_msg.get_command() == baseCommands.UNKNOWN:
                         command.unknown(msg)

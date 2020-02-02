@@ -1,3 +1,4 @@
+'''Модуль со всяческими вспомогательными функциями'''
 import json
 import datetime
 from uuid import UUID, uuid4
@@ -6,13 +7,15 @@ from strongTcpClient.badSituations import NotImplementedCommand
 
 
 def tryUuid(uuid):
+    '''определяет является ли нечто уидом, в случае успеха возвращает строку :)'''
     try:
         return str(UUID(str(uuid)))
     except ValueError as ex:
         return None
 
 
-def getCommandByUUID(module, UUID):
+def get_command_by_uuid(module, UUID):
+    '''из опредлеённого модуля выуживает имя команды по уиду'''
     for cls in dir(module):
         obj = getattr(module, cls)
         if hasattr(obj, 'COMMAND_UUID') and getattr(obj, 'COMMAND_UUID') == UUID:
@@ -20,32 +23,17 @@ def getCommandByUUID(module, UUID):
     raise NotImplementedCommand(f'command {UUID} not implemented')
 
 
-def getCommandStruct(module, moduleImpl):
-    struct = {}
+def get_command_structs(module, moduleImpl):
+    '''из модуля и модуля имплементации выуживает все Классы реализации команд'''
+    structs = {}
     for field in dir(module):
         if tryUuid(getattr(module, field)):
             uuid = getattr(module, field)
-            struct[uuid] = (field, uuid, getCommandByUUID(moduleImpl, uuid))
-    return struct
+            structs[uuid] = (field, uuid, get_command_by_uuid(moduleImpl, uuid))
+    return structs
 
 
-def dateTimeFromInt(intetime):
-    return datetime.datetime.fromtimestamp(intetime / 1e3)
+def get_time_from_int(int_tetime):
+    '''конвертирует плюсовое представление таймстампа в питоновский DateTime'''
+    return datetime.datetime.fromtimestamp(int_tetime / 1e3)
 
-
-class Data(dict):
-    def __init__(self, command):
-        self['id'] = str(uuid4())
-        self['command'] = command
-
-    def addContent(self, content):
-        if content is not None:
-            self['content'] = content
-
-
-    def addFlags(self, bflags):
-        if bflags is not None:
-            self['flags'] = bflags
-
-    def json(self):
-        return json.dumps(self)

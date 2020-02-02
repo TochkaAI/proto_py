@@ -1,3 +1,6 @@
+'''модуль содержит всю локигу логирования
+
+ЗЫ тут я особо пока вообще не парился'''
 import logging
 from logging.handlers import TimedRotatingFileHandler
 

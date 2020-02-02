@@ -2,7 +2,7 @@ from strongTcpClient.message import Message
 from userCommands import COMMAND_1, COMMAND_2, COMMAND_3, \
     COMMAND_4, COMMAND_5, COMMAND_U, COMMAND_6, COMMAND_7
 from strongTcpClient.baseCommands import BaseCommand
-from strongTcpClient.tools import dateTimeFromInt
+from strongTcpClient.tools import get_time_from_int
 
 
 class command1(BaseCommand):
@@ -97,8 +97,8 @@ class command5(BaseCommand):
         print(f'COMMAND_5 anwser handler released with msg: {msg}')
         content = msg.get_content()
         if content:
-            print(dateTimeFromInt(content.get('dtCurrent')))
-            print(dateTimeFromInt(content.get('dtFixed')))
+            print(get_time_from_int(content.get('dtCurrent')))
+            print(get_time_from_int(content.get('dtFixed')))
 
 
 class commandU(BaseCommand):

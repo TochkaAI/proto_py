@@ -89,4 +89,4 @@ class UnknownCommand(BaseCommand):
         for req_msg in msg.my_connection.request_pool.values():
             if req_msg.get_command() == unknown_command_uid:
                 fake_msg = Message(client, id=req_msg.get_id(), command=UNKNOWN)
-                msg.my_connection.message_pool.addMessage(fake_msg)
+                msg.my_connection.message_pool.add_message(fake_msg)

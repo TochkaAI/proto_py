@@ -7,6 +7,8 @@ from strongTcpClient.logger import write_info
 
 
 class TcpServer(TcpWorker):
+    '''сущность которая выступает в роли слушателья
+    к ней можно подключится образовав тем самым конекцию, для дальнейшего обмена сообщениями'''
     def __init__(self, ip, port, client_commands, client_command_impl):
         super().__init__(ip, port, client_commands, client_command_impl)
 
@@ -33,7 +35,7 @@ class TcpServer(TcpWorker):
         thread.daemon = True
         thread.start()
 
-        self.setDisconectionHandler(disconect_connection_handler)
+        self._set_disconnection_handler(disconect_connection_handler)
 
     def stop(self):
         self.finish_all(0, 'Good bye!')

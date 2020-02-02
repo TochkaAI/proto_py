@@ -62,7 +62,7 @@ class Message(dict):
         # если при создании передан уид команды, сразу проверим зарегистрирована ли такая команда,
         # и пропишем всю информацию в объекте
         if command is not None:
-            comm_name = self.my_worker.getCommandName(command)
+            comm_name = self.my_worker.get_command_name(command)
             if comm_name is not None:
                 self['command'] = command
                 self['Command'] = comm_name
