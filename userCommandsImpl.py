@@ -8,8 +8,8 @@ from strongTcpClient.tools import get_time_from_int
 class command1(BaseCommand):
     COMMAND_UUID = COMMAND_1
     @staticmethod
-    def initial(worker):
-        msg = Message.command(worker, COMMAND_1)
+    def initial(connection):
+        msg = connection.create_command_msg(COMMAND_1)
         return msg
 
     @staticmethod

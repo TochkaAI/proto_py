@@ -42,14 +42,9 @@ class Message(dict):
             res.append(f'{field}: {self[field]}')
         return ', '.join(res)
 
-    def __init__(self, worker, conn=None, id=None, command=None):
-        # обязательное поле для меседжа это воркер. только у воркреа есть информация о доступных командах, без него месседж не может существовать
-        # TODO: стоит подумать о том, что месседж может создавать сам воркер, типа у воркера сделать методы гет месседж, гет ансвер и т.п.
-        self.my_worker = worker
-        # когда месседж создаётся во время приёма его из сети, то ему сразу омжно проставить конекцию,
-        # в противном случае она будет проставлена во время отправки из самой конекции
-        # иначе говоря, месседж может существовать без конекции только до момента "путеществия по сети"
-        self.my_connection = conn
+    def __init__(self, connection, id=None, command=None):
+        self.my_worker = connection.worker
+        self.my_connection = connection
         # ид или создаётся, если это инициализация нового сообщения, или задаётся, если это парсинг сообщения из сети
         if id is not None:
             if tryUuid(id):
@@ -159,16 +154,16 @@ class Message(dict):
     '''кучка статических методов для создания наиболее популярных типов месседжов
     с некими пресетами свойств(флагов, типов, контентов и т.п.'''
     @staticmethod
-    def command(client, command_uuid):
+    def command(connection, command_uuid):
         '''Статический метод создания месседжа с типом команды'''
-        msg = Message(client, command=command_uuid)
+        msg = Message(connection, command=command_uuid)
         msg.set_type(Type.Command)
         return msg
 
     @staticmethod
-    def answer(client, commandUuid):
+    def answer(worker, command_uuid):
         '''Статический метод создания месседжа с типом ответ'''
-        msg = Message(client, command=commandUuid)
+        msg = Message(worker, command=command_uuid)
         msg.set_type(Type.Answer)
         return msg
     '''Конец кучки'''

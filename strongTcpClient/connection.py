@@ -5,6 +5,7 @@ from threading import Thread
 
 from strongTcpClient import baseCommands
 from strongTcpClient.const import JSON_PROTOCOL_FORMAT
+from strongTcpClient.message import Message
 from strongTcpClient.messagePool import MessagePool
 from strongTcpClient.logger import write_info
 from strongTcpClient.badSituations import UnknownCommandSend
@@ -78,6 +79,10 @@ class Connection:
         answer = self.recv(16, timeout=3)
         if answer != bdata:
             raise TypeError('Удалённый сервер не согласовал тип протокола')
+
+    def create_command_msg(self, command_uuid):
+        msg = Message.command(self, command_uuid)
+        return msg
 
     def send_message(self, message, need_answer=False):
         '''метод отправки сущности сообщение

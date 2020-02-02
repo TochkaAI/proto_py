@@ -11,8 +11,8 @@ class CloseConnectionCommand(BaseCommand):
     COMMAND_UUID = CLOSE_CONNECTION
 
     @staticmethod
-    def initial(client, code, desc):
-        msg = Message.command(client, CLOSE_CONNECTION)
+    def initial(conn, code, desc):
+        msg = Message.command(conn, CLOSE_CONNECTION)
         content = dict(
             code=code,
             description=desc
@@ -21,24 +21,24 @@ class CloseConnectionCommand(BaseCommand):
         return msg
 
     @staticmethod
-    def answer(client, msg, code, descr):
-        msg.my_connection.close()
+    def answer(conn, msg, code, descr):
+        conn.close()
         return True
 
     @staticmethod
-    def handler(client, msg):
+    def handler(conn, msg):
         answer = msg.get_answer_copy()
-        answer.set_content(None);
-        client.send_message(answer, msg.my_connection)
-        msg.my_connection.close()
+        answer.set_content(None)
+        conn.send_message(answer)
+        conn.close()
 
 
 class ProtocolCompatibleCommand(BaseCommand):
     COMMAND_UUID = PROTOCOL_COMPATIBLE
 
     @staticmethod
-    def initial(client):
-        msg = Message.command(client, PROTOCOL_COMPATIBLE)
+    def initial(conn):
+        msg = conn.create_command_msg(conn, PROTOCOL_COMPATIBLE)
         msg.set_protocol_version_high(config.protocolVersionLow)
         msg.set_protocol_version_low(config.protocolVersionHigh)
         return msg
