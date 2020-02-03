@@ -93,7 +93,9 @@ class Connection:
         в последсвии мониторя этот пул, мы поймаем ответное сообщение
         если ответ не нужен, то сообщение в пул не добавляется'''
         if message.get_command() in self.worker.unknown_command_list:
-            raise UnknownCommandSend('Попытка оптравки неизвестной команды!')
+            write_info(f'[{message.my_connection.getpeername()}] Попытка оптравки неизвестной команды!')
+            return
+            # raise UnknownCommandSend('Попытка оптравки неизвестной команды!')
 
         message.set_connection(self)
         self.msend(message.get_bytes())
@@ -107,7 +109,7 @@ class Connection:
         по сути является обёрткой на методом send_message
         не подразумевает получение ответа'''
         msg = command.initial(self, *args, **kwargs)
-        self.worker.send_message(msg, self)
+        self.send_message(msg, self)
 
     def exec_command_sync(self, command, *args, **kwargs):
         '''метод для пользователя
@@ -132,7 +134,7 @@ class Connection:
                 if ans_msg.get_command() == baseCommands.UNKNOWN:
                     return command.unknown(msg)
 
-                return command.answer(self, ans_msg, *args, **kwargs)
+                return command.answer(ans_msg, *args, **kwargs)
 
             time.sleep(1)
 
@@ -159,7 +161,7 @@ class Connection:
                         command.unknown(msg)
                         return
 
-                    command.answer(self, ans_msg, *args, **kwargs)
+                    command.answer(ans_msg, *args, **kwargs)
                     return
                 time.sleep(1)
 

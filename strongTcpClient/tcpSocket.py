@@ -15,7 +15,7 @@ class TcpSocket(TcpWorker):
             write_info('Не удалось, установить соединение, удалённый сервер не доступен')
             return
         self.start(connection)
-        self.connection_pool.addConnection(connection)
+        self.connection_pool.add_connection(connection)
         return connection
 
     def disconnect(self):

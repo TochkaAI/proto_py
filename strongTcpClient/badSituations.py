@@ -12,6 +12,11 @@ class UnknownCommandSend(BaseException):
         super().__init__(msg)
 
 
+class UnknownCommandRecieved(BaseException):
+    def __init__(self, msg):
+        super().__init__(msg)
+
+
 class NotImplementedCommand(BaseException):
     def __init__(self, msg):
         super().__init__(msg)

@@ -1,6 +1,7 @@
 import uuid
 from threading import Thread
 
+from strongTcpClient.badSituations import UnknownCommandRecieved
 from strongTcpClient.logger import write_info
 from strongTcpClient import baseCommands
 from strongTcpClient import baseCommandsImpl
@@ -39,17 +40,17 @@ class TcpWorker:
     def base_commands_handlers(self, msg):
         '''обработки базовых команд'''
         if msg.get_command() == baseCommands.PROTOCOL_COMPATIBLE:
-            ProtocolCompatibleCommand.handler(self, msg)
+            ProtocolCompatibleCommand.handler(msg)
         elif msg.get_command() == baseCommands.UNKNOWN:
-            UnknownCommand.handler(self, msg)
+            UnknownCommand.handler(msg)
         elif msg.get_command() == baseCommands.CLOSE_CONNECTION:
-            CloseConnectionCommand.handler(self, msg)
+            CloseConnectionCommand.handler(msg)
 
     def user_commands_handlers(self, msg):
         '''обработка пользовательских команд'''
         # TODO: надо добавить прверку здесь на существование такой команды и в ответ отправлять UnknownCommand
         command = self.user_commands_list[msg.get_command()][2]
-        command.handler(msg.my_worker, msg)
+        command.handler(msg)
 
     def start_listening(self, connection):
         '''эта команда для конекции запускает бесконечный цикл прослушивания сокета'''
@@ -64,17 +65,22 @@ class TcpWorker:
             answer = connection.mrecv()
             if answer:
                 write_info(f'[{connection.getpeername()}] Msg JSON receeved: {answer}')
-                msg = Message.from_string(connection, answer)
-                write_info(f'[{connection.getpeername()}] Msg received: {msg}')
-                # Это команда с той стороны, её нужно прям тут и обработать!
-                if msg.get_id() not in connection.request_pool:
-                    if msg.get_command() in self.base_commands_list:
-                        self.base_commands_handlers(msg)
-                    else:
-                        self.user_commands_handlers(msg)
-                # Это ответы, который нужно обработать
+                try:
+                    msg = Message.from_string(connection, answer)
+                except UnknownCommandRecieved as unknw_except:
+                    write_info(f'[{connection.getpeername()}] Unknown msg received')
+                    connection.exec_command(UnknownCommand, answer)
                 else:
-                    connection.message_pool.add_message(msg)
+                    write_info(f'[{connection.getpeername()}] Msg received: {msg}')
+                    # Это команда с той стороны, её нужно прям тут и обработать!
+                    if msg.get_id() not in connection.request_pool:
+                        if msg.get_command() in self.base_commands_list:
+                            self.base_commands_handlers(msg)
+                        else:
+                            self.user_commands_handlers(msg)
+                    # Это ответы, который нужно обработать
+                    else:
+                        connection.message_pool.add_message(msg)
             else:
                 # ЭТО означает что сервер разорвал соединение! о боги! это было так просто, почему яя этого не знал?
                 break

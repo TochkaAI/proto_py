@@ -1,3 +1,5 @@
+import json
+
 from strongTcpClient import config
 from strongTcpClient.baseCommands import BaseCommand, CLOSE_CONNECTION, PROTOCOL_COMPATIBLE, UNKNOWN, ERROR
 from strongTcpClient.message import Message
@@ -12,17 +14,16 @@ class CloseConnectionCommand(BaseCommand):
 
     @staticmethod
     def initial(conn, code, desc):
-        msg = Message.command(conn, CLOSE_CONNECTION)
+        msg = conn.create_command_msg(CLOSE_CONNECTION)
         content = dict(
             code=code,
             description=desc
         )
-        msg.set_content(content)
         return msg
 
     @staticmethod
-    def answer(conn, msg, code, descr):
-        conn.close()
+    def answer(msg, code, descr):
+        msg.my_connection.close()
         return True
 
     @staticmethod
@@ -44,12 +45,13 @@ class ProtocolCompatibleCommand(BaseCommand):
         return msg
 
     @staticmethod
-    def answer(client, msg, code, descr):
+    def answer(msg, code, descr):
         msg.my_connection.close()
         return True
 
     @staticmethod
-    def handler(conenction, msg):
+    def handler(msg):
+        connection = msg.my_connection
         def protocol_compatible(versionLow, versionHigh):
             if versionHigh is None and versionLow is None:
                 # Видимо ничего не надо делать
@@ -66,7 +68,7 @@ class ProtocolCompatibleCommand(BaseCommand):
         if not protocol_compatible(msg.get('protocolVersionLow'), msg.get('protocolVersionHigh')):
             message = f'Protocol versions incompatible. This protocol version: {config.protocolVersionLow}-{config.protocolVersionHigh}. ' \
                   f'Remote protocol version: {msg.get("protocolVersionLow")}-{msg.get("protocolVersionHigh")}'
-            conenction.exec_command_sync(CloseConnectionCommand, 0, message)
+            connection.exec_command_sync(CloseConnectionCommand, 0, message)
             return False
         return True
 
@@ -75,18 +77,32 @@ class UnknownCommand(BaseCommand):
     COMMAND_UUID = UNKNOWN
 
     @staticmethod
-    def initial(*args, **kwargs):
-        pass
+    def initial(conn, unknown_answer):
+        unkwonw_data = json.loads(unknown_answer)
+        msg = conn.create_command_msg(UNKNOWN)
+        content = {
+            'commandId': unkwonw_data['command'],
+            'socketType': 2,
+            'socketDescriptor': conn.fileno(),
+            'socketName': str(conn.getpeername()),
+            'addressProtocol': 'ip4',
+            'address': conn.getpeername()[0],
+            'addressScopeId': '',
+            'port': conn.getpeername()[1]
+        }
+        msg.set_content(content)
+        return msg
 
     @staticmethod
     def answer(*args, **kwargs):
-        pass
+        raise Exception('Если вы выдите этот эксепшн, значит что-то пошло не так')
 
     @staticmethod
-    def handler(conenction, msg):
+    def handler(msg):
+        connection = msg.my_connection
         unknown_command_uid = msg.get_content().get('commandId')
-        conenction.worker.unknown_command_list.append(unknown_command_uid)
+        connection.worker.unknown_command_list.append(unknown_command_uid)
         for req_msg in msg.my_connection.request_pool.values():
             if req_msg.get_command() == unknown_command_uid:
-                fake_msg = Message(conenction, id=req_msg.get_id(), command=UNKNOWN)
+                fake_msg = Message(connection, id=req_msg.get_id(), command=UNKNOWN)
                 msg.my_connection.message_pool.add_message(fake_msg)

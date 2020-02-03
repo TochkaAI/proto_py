@@ -2,7 +2,7 @@ import json
 from copy import copy
 from uuid import uuid4
 
-from strongTcpClient.badSituations import NotConnectionException
+from strongTcpClient.badSituations import NotConnectionException, UnknownCommandRecieved
 from strongTcpClient.logger import write_info
 from strongTcpClient.tools import tryUuid
 from strongTcpClient.flags import MsgFlag, Type
@@ -62,7 +62,7 @@ class Message(dict):
                 self['command'] = command
                 self['Command'] = comm_name
             else:
-                raise ValueError('Неизвестный идентификатор команды')
+                raise UnknownCommandRecieved('Неизвестный идентификатор команды')
 
         # так же месседж не может существовать без флагов, при создании они инициализируются дефолтными значениями
         self['flags'] = MsgFlag()
