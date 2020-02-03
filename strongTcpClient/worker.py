@@ -64,7 +64,7 @@ class TcpWorker:
             answer = connection.mrecv()
             if answer:
                 write_info(f'[{connection.getpeername()}] Msg JSON receeved: {answer}')
-                msg = Message.from_string(self, answer, connection)
+                msg = Message.from_string(connection, answer)
                 write_info(f'[{connection.getpeername()}] Msg received: {msg}')
                 # Это команда с той стороны, её нужно прям тут и обработать!
                 if msg.get_id() not in connection.request_pool:

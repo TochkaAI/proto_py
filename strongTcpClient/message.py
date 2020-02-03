@@ -161,24 +161,23 @@ class Message(dict):
         return msg
 
     @staticmethod
-    def answer(worker, command_uuid):
+    def answer(connection, command_uuid):
         '''Статический метод создания месседжа с типом ответ'''
-        msg = Message(worker, command=command_uuid)
+        msg = Message(connection, command=command_uuid)
         msg.set_type(Type.Answer)
         return msg
     '''Конец кучки'''
 
     @staticmethod
-    def from_string(worker, string_msg, conn):
+    def from_string(connection, string_msg):
         '''статический медо дессериализации меседжа из json строки приходящей из "сети"'''
         # TODO перенести этот метод или в воркера или в конекцию
         recieved_dict = json.loads(string_msg)
-        msg = Message(worker, id=recieved_dict['id'], command=recieved_dict['command'])
+        msg = Message(connection, id=recieved_dict['id'], command=recieved_dict['command'])
         if recieved_dict.get('flags'):
             msg['flags'] = MsgFlag.from_digit(recieved_dict.get('flags'))
         for key in ['content', 'tags', 'maxTimeLife', 'protocolVersionLow', 'protocolVersionHigh']:
             if recieved_dict.get(key):
                 msg[key] = recieved_dict.get(key)
 
-        msg.set_connection(conn)
         return msg

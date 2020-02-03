@@ -106,13 +106,13 @@ class Connection:
         отправка сущности "команды" у которой реализованы соответсвующие обработчики
         по сути является обёрткой на методом send_message
         не подразумевает получение ответа'''
-        msg = command.initial(self.worker, *args, **kwargs)
+        msg = command.initial(self, *args, **kwargs)
         self.worker.send_message(msg, self)
 
     def exec_command_sync(self, command, *args, **kwargs):
         '''метод для пользователя
         отправка сущности "команда", с последущией обработкой ответа в синхронном режиме'''
-        msg = command.initial(self.worker, *args, **kwargs)
+        msg = command.initial(self, *args, **kwargs)
         self.send_message(msg, need_answer=True)
 
         max_time_life = msg.get_max_time_life()
@@ -132,7 +132,7 @@ class Connection:
                 if ans_msg.get_command() == baseCommands.UNKNOWN:
                     return command.unknown(msg)
 
-                return command.answer(self.worker, ans_msg, *args, **kwargs)
+                return command.answer(self, ans_msg, *args, **kwargs)
 
             time.sleep(1)
 
@@ -159,11 +159,11 @@ class Connection:
                         command.unknown(msg)
                         return
 
-                    command.answer(self.worker, ans_msg, *args, **kwargs)
+                    command.answer(self, ans_msg, *args, **kwargs)
                     return
                 time.sleep(1)
 
-        msg = command.initial(self.worker, *args, **kwargs)
+        msg = command.initial(self, *args, **kwargs)
         self.send_message(msg, need_answer=True)
 
         listener_thread = Thread(target=answer_handler)

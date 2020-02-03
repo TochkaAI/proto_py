@@ -38,7 +38,7 @@ class ProtocolCompatibleCommand(BaseCommand):
 
     @staticmethod
     def initial(conn):
-        msg = conn.create_command_msg(conn, PROTOCOL_COMPATIBLE)
+        msg = conn.create_command_msg(PROTOCOL_COMPATIBLE)
         msg.set_protocol_version_high(config.protocolVersionLow)
         msg.set_protocol_version_low(config.protocolVersionHigh)
         return msg
@@ -49,7 +49,7 @@ class ProtocolCompatibleCommand(BaseCommand):
         return True
 
     @staticmethod
-    def handler(client, msg):
+    def handler(conenction, msg):
         def protocol_compatible(versionLow, versionHigh):
             if versionHigh is None and versionLow is None:
                 # Видимо ничего не надо делать
@@ -66,7 +66,7 @@ class ProtocolCompatibleCommand(BaseCommand):
         if not protocol_compatible(msg.get('protocolVersionLow'), msg.get('protocolVersionHigh')):
             message = f'Protocol versions incompatible. This protocol version: {config.protocolVersionLow}-{config.protocolVersionHigh}. ' \
                   f'Remote protocol version: {msg.get("protocolVersionLow")}-{msg.get("protocolVersionHigh")}'
-            client.exec_command_sync(CloseConnectionCommand, msg.my_connection, 0, message)
+            conenction.exec_command_sync(CloseConnectionCommand, 0, message)
             return False
         return True
 
@@ -83,10 +83,10 @@ class UnknownCommand(BaseCommand):
         pass
 
     @staticmethod
-    def handler(client, msg):
+    def handler(conenction, msg):
         unknown_command_uid = msg.get_content().get('commandId')
-        client.unknown_command_list.append(unknown_command_uid)
+        conenction.worker.unknown_command_list.append(unknown_command_uid)
         for req_msg in msg.my_connection.request_pool.values():
             if req_msg.get_command() == unknown_command_uid:
-                fake_msg = Message(client, id=req_msg.get_id(), command=UNKNOWN)
+                fake_msg = Message(conenction, id=req_msg.get_id(), command=UNKNOWN)
                 msg.my_connection.message_pool.add_message(fake_msg)
