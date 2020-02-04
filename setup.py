@@ -4,14 +4,9 @@ import setuptools
 #     long_description = fh.read()
 
 setuptools.setup(
-    name="strongTcpClient", # Replace with your own username
+    name="strongTcpClient",
     version="0.0.4",
-    author="Example Author",
-    author_email="author@example.com",
-    description="A small example package",
-    long_description='long_description',
-    long_description_content_type="text/markdown",
-    url="https://github.com/pypa/sampleproject",
+    description="package with strongTcpClient for PointView",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
