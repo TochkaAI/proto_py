@@ -3,12 +3,12 @@ import time
 import uuid
 from threading import Thread
 
-from strongTcpClient import baseCommands
-from strongTcpClient.const import JSON_PROTOCOL_FORMAT
-from strongTcpClient.message import Message
-from strongTcpClient.messagePool import MessagePool
-from strongTcpClient.logger import write_info
-from strongTcpClient.badSituations import UnknownCommandSend
+import baseCommands
+from const import JSON_PROTOCOL_FORMAT
+from message import Message
+from messagePool import MessagePool
+from logger import write_info
+# from strongTcpClient.badSituations import UnknownCommandSend
 
 
 class Connection:

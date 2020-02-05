@@ -2,7 +2,7 @@ import userCommandsImpl, userCommands
 from strongTcpClient import TcpServer
 from strongTcpClient import TcpSocket
 from userCommandsImpl import (
-    # command1,
+    command1,
     command2,
     command3, command4, command5, commandU, command6, command7)
 

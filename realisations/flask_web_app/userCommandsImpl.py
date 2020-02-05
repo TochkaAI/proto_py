@@ -1,7 +1,7 @@
-from strongTcpClient import Message
-from strongTcpClient import BaseCommand
-from realisations.simple_console_app.userCommands import (
-        # COMMAND_1,
+from packages.strongTcpClient import Message
+from packages.strongTcpClient import BaseCommand
+from userCommands import (
+        COMMAND_1,
         COMMAND_2,
         COMMAND_3,
         COMMAND_4,
@@ -10,26 +10,26 @@ from realisations.simple_console_app.userCommands import (
         COMMAND_6,
         COMMAND_7
     )
-from strongTcpClient.tools import get_time_from_int
+from packages.strongTcpClient.tools import get_time_from_int
 
 
-# class command1(BaseCommand):
-#     COMMAND_UUID = COMMAND_1
-#     @staticmethod
-#     def initial(connection):
-#         msg = connection.create_command_msg(COMMAND_1)
-#         return msg
-#
-#     @staticmethod
-#     def answer(msg):
-#         print('COMMAND_1 anwser handler released')
-#
-#     @staticmethod
-#     def handler(msg):
-#         print('COMMAND_1 handler released')
-#         ans = msg.get_answer_copy()
-#         ans.send_message()
-#         print('SEND ANSWER BACK')
+class command1(BaseCommand):
+    COMMAND_UUID = COMMAND_1
+    @staticmethod
+    def initial(connection):
+        msg = connection.create_command_msg(COMMAND_1)
+        return msg
+
+    @staticmethod
+    def answer(msg):
+        print('COMMAND_1 anwser handler released')
+
+    @staticmethod
+    def handler(msg):
+        print('COMMAND_1 handler released')
+        ans = msg.get_answer_copy()
+        ans.send_message()
+        print('SEND ANSWER BACK')
 
 
 class command2(BaseCommand):
@@ -47,6 +47,7 @@ class command2(BaseCommand):
     @staticmethod
     def answer(msg):
         print('COMMAND_2 anwser handler released')
+        return msg
 
     @staticmethod
     def handler(msg):
@@ -70,6 +71,7 @@ class command3(BaseCommand):
         content = msg.get_content()
         if content:
             print(content.get('value1'))
+        return msg
 
     @staticmethod
     def handler(msg):

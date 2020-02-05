@@ -3,7 +3,7 @@
 '''
 import sys
 
-from strongTcpClient.logger import write_info
+from logger import write_info
 
 Unknown = "UNKNOWN"
 Error = "ERROR"

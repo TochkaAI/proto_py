@@ -1,8 +1,8 @@
 import json
 
-from strongTcpClient import config
-from strongTcpClient.baseCommands import BaseCommand, CLOSE_CONNECTION, PROTOCOL_COMPATIBLE, UNKNOWN, ERROR
-from strongTcpClient.message import Message
+import config
+from baseCommands import BaseCommand, CLOSE_CONNECTION, PROTOCOL_COMPATIBLE, UNKNOWN, ERROR
+from message import Message
 
 
 class Error(BaseCommand):

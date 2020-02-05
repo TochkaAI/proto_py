@@ -3,7 +3,7 @@ import json
 import datetime
 from uuid import UUID, uuid4
 
-from strongTcpClient.badSituations import NotImplementedCommand
+from badSituations import NotImplementedCommand
 
 
 def tryUuid(uuid):

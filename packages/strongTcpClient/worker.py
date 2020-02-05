@@ -1,15 +1,15 @@
 import uuid
 from threading import Thread
 
-from strongTcpClient.badSituations import UnknownCommandRecieved
-from strongTcpClient.logger import write_info
-from strongTcpClient import baseCommands
-from strongTcpClient import baseCommandsImpl
-from strongTcpClient.baseCommandsImpl import ProtocolCompatibleCommand, CloseConnectionCommand, UnknownCommand
-from strongTcpClient.connectionPool import ConnectionPool
-from strongTcpClient.message import Message
-from strongTcpClient.tools import get_command_structs
-from strongTcpClient.const import JSON_PROTOCOL_FORMAT
+from badSituations import UnknownCommandRecieved
+from logger import write_info
+import baseCommands
+import baseCommandsImpl
+from baseCommandsImpl import ProtocolCompatibleCommand, CloseConnectionCommand, UnknownCommand
+from connectionPool import ConnectionPool
+from message import Message
+from tools import get_command_structs
+# from const import JSON_PROTOCOL_FORMAT
 
 
 class TcpWorker:

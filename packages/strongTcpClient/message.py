@@ -2,10 +2,10 @@ import json
 from copy import copy
 from uuid import uuid4
 
-from strongTcpClient.badSituations import NotConnectionException, UnknownCommandRecieved
-from strongTcpClient.logger import write_info
-from strongTcpClient.tools import tryUuid
-from strongTcpClient.flags import MsgFlag, Type
+from badSituations import NotConnectionException, UnknownCommandRecieved
+from logger import write_info
+from tools import tryUuid
+from flags import MsgFlag, Type
 
 
 class Message(dict):
@@ -41,6 +41,11 @@ class Message(dict):
             if field in ['command']: continue
             res.append(f'{field}: {self[field]}')
         return ', '.join(res)
+
+    def to_json(self):
+        temp_json = dict(self)
+        temp_json['flags'] = str(temp_json.get('flags', ''))
+        return json.dumps(temp_json)
 
     def __init__(self, connection, id=None, command=None):
         self.my_worker = connection.worker
