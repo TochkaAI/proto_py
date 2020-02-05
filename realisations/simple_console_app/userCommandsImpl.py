@@ -1,5 +1,6 @@
-from strongTcpClient.message import Message
-from userCommands import (
+from strongTcpClient import Message
+from strongTcpClient import BaseCommand
+from realisations.simple_console_app.userCommands import (
         # COMMAND_1,
         COMMAND_2,
         COMMAND_3,
@@ -9,7 +10,6 @@ from userCommands import (
         COMMAND_6,
         COMMAND_7
     )
-from strongTcpClient.baseCommands import BaseCommand
 from strongTcpClient.tools import get_time_from_int
 
 

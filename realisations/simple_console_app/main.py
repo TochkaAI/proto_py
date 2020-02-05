@@ -1,7 +1,6 @@
-import userCommands
-import userCommandsImpl
-from strongTcpClient.tcpServer import TcpServer
-from strongTcpClient.tcpSocket import TcpSocket
+import userCommandsImpl, userCommands
+from strongTcpClient import TcpServer
+from strongTcpClient import TcpSocket
 from userCommandsImpl import (
     # command1,
     command2,
