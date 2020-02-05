@@ -1,7 +1,7 @@
-import userCommandsImpl, userCommands
+from flask_web_app import userCommands, userCommandsImpl
 from strongTcpClient import TcpServer
 from strongTcpClient import TcpSocket
-from userCommandsImpl import (
+from flask_web_app.userCommandsImpl import (
     command1,
     command2,
     command3, command4, command5, commandU, command6, command7)

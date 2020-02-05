@@ -42,6 +42,7 @@ class ProtocolCompatibleCommand(BaseCommand):
         msg = conn.create_command_msg(PROTOCOL_COMPATIBLE)
         msg.set_protocol_version_high(config.protocolVersionLow)
         msg.set_protocol_version_low(config.protocolVersionHigh)
+        msg.set_max_time_life(5)
         return msg
 
     @staticmethod
@@ -52,6 +53,7 @@ class ProtocolCompatibleCommand(BaseCommand):
     @staticmethod
     def handler(msg):
         connection = msg.my_connection
+
         def protocol_compatible(versionLow, versionHigh):
             if versionHigh is None and versionLow is None:
                 # Видимо ничего не надо делать
@@ -71,6 +73,11 @@ class ProtocolCompatibleCommand(BaseCommand):
             connection.exec_command_sync(CloseConnectionCommand, 0, message)
             return False
         return True
+
+    @staticmethod
+    def timeout(msg):
+        # значит всё ок :)
+        pass
 
 
 class UnknownCommand(BaseCommand):

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>flask app</title>
+</head>
+<body>
+    <h1>Welcome to flask app</h1>
+    <h2>Info:</h2>
+    <p>connection name {{conn_name}}</p>
+    <h3>conncetion req pools:</h3>
+    {% for msg in requests %}
+    <p>{{msg}}</p>
+    {% endfor %}
+
+    <h3>conncetion ans pools:</h3>
+    {% for msg in answer %}
+    <p>{{msg}}</p>
+    {% endfor %}
+</body>
+</html>

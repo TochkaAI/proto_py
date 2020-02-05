@@ -1,6 +1,3 @@
-from json import JSONEncoder
-
-
 '''Список неймспейсов для описания существующих типов флагов'''
 class SocketType:
     Unknown = 0
@@ -68,7 +65,7 @@ class FlagField:
         self.value = value
 
 
-class MsgFlag(JSONEncoder):
+class MsgFlag:
     '''структура для хранения информации о всех флагах сообщения'''
     def __str__(self):
         return str(self.get_digit())

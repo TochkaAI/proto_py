@@ -1,5 +1,5 @@
-from worker import TcpWorker
 from connection import Connection
+from worker import TcpWorker
 from logger import write_info
 
 

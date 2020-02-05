@@ -1,6 +1,6 @@
 from packages.strongTcpClient import Message
 from packages.strongTcpClient import BaseCommand
-from userCommands import (
+from flask_web_app.userCommands import (
         COMMAND_1,
         COMMAND_2,
         COMMAND_3,
@@ -10,7 +10,6 @@ from userCommands import (
         COMMAND_6,
         COMMAND_7
     )
-from packages.strongTcpClient.tools import get_time_from_int
 
 
 class command1(BaseCommand):
@@ -22,7 +21,7 @@ class command1(BaseCommand):
 
     @staticmethod
     def answer(msg):
-        print('COMMAND_1 anwser handler released')
+        return msg
 
     @staticmethod
     def handler(msg):
@@ -46,7 +45,6 @@ class command2(BaseCommand):
 
     @staticmethod
     def answer(msg):
-        print('COMMAND_2 anwser handler released')
         return msg
 
     @staticmethod
@@ -67,10 +65,6 @@ class command3(BaseCommand):
 
     @staticmethod
     def answer(msg):
-        print(f'COMMAND_3 anwser handler released with msg: {msg}')
-        content = msg.get_content()
-        if content:
-            print(content.get('value1'))
         return msg
 
     @staticmethod
@@ -92,7 +86,7 @@ class command4(BaseCommand):
 
     @staticmethod
     def answer(msg):
-        print(f'COMMAND_4 anwser handler released with msg: {msg}')
+        return msg
 
 
 class command5(BaseCommand):
@@ -104,11 +98,7 @@ class command5(BaseCommand):
 
     @staticmethod
     def answer(msg):
-        print(f'COMMAND_5 anwser handler released with msg: {msg}')
-        content = msg.get_content()
-        if content:
-            print(get_time_from_int(content.get('dtCurrent')))
-            print(get_time_from_int(content.get('dtFixed')))
+        return msg
 
 
 class commandU(BaseCommand):
@@ -136,7 +126,7 @@ class command6(BaseCommand):
 
     @staticmethod
     def answer(msg):
-        print('COMMAND_6 anwser handler released')
+        return msg
 
 
 class command7(BaseCommand):
@@ -149,7 +139,7 @@ class command7(BaseCommand):
 
     @staticmethod
     def answer(msg):
-        print('COMMAND_7 anwser handler released')
+        return msg
 
     @staticmethod
     def timeout():

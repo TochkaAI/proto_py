@@ -124,7 +124,7 @@ class Connection:
         while True:
             if t_end and time.time() > t_end:
                 self.request_pool.dell_message(msg)
-                return command.timeout()
+                return command.timeout(msg)
 
             if msg.get_id() in self.message_pool:
                 ans_msg = self.message_pool[msg.get_id()]
@@ -149,7 +149,7 @@ class Connection:
             while True:
                 if t_end and time.time() > t_end:
                     self.request_pool.dell_message(msg)
-                    command.timeout()
+                    command.timeout(msg)
                     return
 
                 if msg.get_id() in self.message_pool:

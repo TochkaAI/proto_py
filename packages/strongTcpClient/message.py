@@ -128,6 +128,7 @@ class Message(dict):
         return 0
 
     def set_max_time_life(self, max_time_life):
+        '''устанавлдивает время ожидания в '''
         self['maxTimeLife'] = max_time_life
 
     def get_max_time_life(self):
