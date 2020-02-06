@@ -1,4 +1,4 @@
-from flask_web_app import userCommands, userCommandsImpl
+from . import userCommands, userCommandsImpl
 from packages.strongTcpClient.tcpSocket import TcpSocket
 
 

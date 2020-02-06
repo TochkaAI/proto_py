@@ -1,8 +1,8 @@
 from flask import render_template, request, jsonify
 
-from flask_web_app.remoteConn import CONNECTION
-from flask_web_app import userCommandsImpl
-from flask_web_app import app
+from .remoteConn import CONNECTION
+from . import userCommandsImpl
+from . import app
 
 
 def get_context():

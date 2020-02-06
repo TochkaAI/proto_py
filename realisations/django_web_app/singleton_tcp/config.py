@@ -1,18 +1,25 @@
 from django.apps import AppConfig
-from tcpClientModule.client import StrongClient
 
-clientObj = None
+from . import userCommands, userCommandsImpl
+from packages.strongTcpClient.tcpSocket import TcpSocket
+
+CONNECTION = None
 
 
-class TcpCLientConfig(AppConfig):
-    name = 'tcpClientModule'
+class TcpClientConfig(AppConfig):
+    name = 'singleton_tcp'
 
     def __init__(self, app_name, app_module):
-        global clientObj
-        if clientObj is None:
-            clientObj = StrongClient()
         super().__init__(app_name, app_module)
 
+    @staticmethod
+    def create_connection_singleton():
+        ip_to_connect = '127.0.0.1'
+        port_to_connect = 48062
+        tcp_worker = TcpSocket(ip_to_connect, port_to_connect, userCommands, userCommandsImpl)
+        return tcp_worker.connect()
+
     def ready(self):
-        if clientObj is not None:
-            clientObj.start()
+        global CONNECTION
+        CONNECTION = self.create_connection_singleton()
+

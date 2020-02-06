@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
     <head>
-        <link href="/css/main.css" rel="stylesheet">
+        <link href="/static/css/main.css" rel="stylesheet">
 
         <!-- Required meta tags -->
         <meta charset="utf-8">
@@ -13,8 +13,8 @@
         <!-- Bootstrap CSS -->
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
 
-        <link href="/json-viewer/jquery.json-viewer.css" rel="stylesheet">
-        <script src="/json-viewer/jquery.json-viewer.js"></script>
+        <link href="/static/json-viewer/jquery.json-viewer.css" rel="stylesheet">
+        <script src="/static/json-viewer/jquery.json-viewer.js"></script>
 
         <script type="text/javascript">
             $(document).ready(function() {
@@ -24,11 +24,13 @@
 
                         var form = $(this);
                         var url = form.attr('action');
+                        var data = form.serialize();
 
                         $.ajax({
                                type: "POST",
                                url: url,
-                               data: form.serialize(), // serializes the form's elements.
+                               headers: {'X-CSRFToken': '{{ csrf_token }}'},
+                               data: data, // serializes the form's elements.
                                success: function(data)
                                {
                                     $('#json-viewer').jsonViewer(data, {
@@ -41,18 +43,19 @@
             });
         </script>
 
-        <title>Flask web app</title>
+        <title>Django web app</title>
     </head>
     <body>
+        {% csrf_token %}
         <div class="container-fluid">
-            <h1>Welcome to <a href="/">flask</a> app</h1>
+            <h1>Welcome to <a href="/rest">Django</a> app</h1>
             <div class="alert-primary">
                 <ul class="nav">
                     <li class="nav-item">
-                        <a class="nav-link active" href="/cmd1">cmd1</a>
+                        <a class="nav-link active" href="/rest/cmd1">cmd1</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/cmd3">cmd3</a>
+                        <a class="nav-link" href="/rest/cmd3">cmd3</a>
                     </li>
                 </ul>
             </div>
