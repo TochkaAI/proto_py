@@ -1,0 +1,15 @@
+{% extends "index.html" %}
+{% block content %}
+
+<div class="alert alert-secondary" role="alert">
+    <h4>COMMAND_1</h4>
+    <form action="/cmd1" method="post" id="idForm">
+        <p>Форма без входящих параметров</p>
+        <input type="submit" value="GO">
+    </form>
+</div>
+<div class="alert alert-primary" role="alert" id="resultField">
+    <pre id="json-viewer"></pre>
+</div>
+
+{% endblock %}
