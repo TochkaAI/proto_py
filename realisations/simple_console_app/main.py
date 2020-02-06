@@ -1,10 +1,9 @@
-from flask_web_app import userCommands, userCommandsImpl
-from strongTcpClient import TcpServer
-from strongTcpClient import TcpSocket
-from flask_web_app.userCommandsImpl import (
+import userCommands, userCommandsImpl
+from userCommandsImpl import (
     command1,
     command2,
     command3, command4, command5, commandU, command6, command7)
+from packages.strongTcpClient import TcpSocket, TcpServer
 
 
 def like_client():
@@ -83,7 +82,7 @@ def like_server():
         listening_worker.stop()
 
 if __name__ == '__main__':
-    # like_client()
-    like_server()
+    like_client()
+    # like_server()
 
     print('finish')

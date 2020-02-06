@@ -1,7 +1,6 @@
-from strongTcpClient import Message
-from strongTcpClient import BaseCommand
-from realisations.simple_console_app.userCommands import (
-        # COMMAND_1,
+from packages.strongTcpClient import BaseCommand, Message
+from userCommands import (
+        COMMAND_1,
         COMMAND_2,
         COMMAND_3,
         COMMAND_4,
@@ -10,7 +9,6 @@ from realisations.simple_console_app.userCommands import (
         COMMAND_6,
         COMMAND_7
     )
-from strongTcpClient.tools import get_time_from_int
 
 
 class command1(BaseCommand):
@@ -62,6 +60,10 @@ class command3(BaseCommand):
     @staticmethod
     def initial(connection):
         msg = Message.command(connection, COMMAND_3)
+        msg.set_content(dict(value1='123123',
+                             value2=123,
+                             value3=1.1,
+                             value4=123123123))
         return msg
 
     @staticmethod

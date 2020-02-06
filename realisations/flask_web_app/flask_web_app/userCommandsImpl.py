@@ -59,8 +59,9 @@ class command2(BaseCommand):
 class command3(BaseCommand):
     COMMAND_UUID = COMMAND_3
     @staticmethod
-    def initial(connection):
+    def initial(connection, content):
         msg = Message.command(connection, COMMAND_3)
+        msg.set_content(content)
         return msg
 
     @staticmethod

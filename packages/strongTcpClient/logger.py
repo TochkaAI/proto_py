@@ -5,7 +5,7 @@ import logging
 # from logging.handlers import TimedRotatingFileHandler
 
 logging.basicConfig(
-    filename='flask_web_app/app.log',
+    filename='app.log',
     filemode='a',
     format='%(asctime)s - %(name)s - %(levelname)s : %(message)s',
     level=logging.INFO)

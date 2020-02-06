@@ -2,13 +2,24 @@
 {% block content %}
 
 <div class="alert alert-secondary" role="alert">
-    <h4>COMMAND_1</h4>
-    <form action="/cmd1" method="post" id="idForm">
-        <p>Форма без входящих параметров</p>
-        <input type="submit" value="GO">
+    <h4>COMMAND_3</h4>
+    <form action="/cmd3" method="post" id="idForm">
+
+        <p class="pprefix">value1 - text</p>
+        <input class="form-control" type="text" name="value1">
+        <p class="pprefix">value2 - number</p>
+        <input class="form-control" type="number" name="value2">
+        <p class="pprefix">value3 - float</p>
+        <input class="form-control" type="number" name="value3" step="0.01">
+        <p class="pprefix">value4 - looong</p>
+        <input class="form-control" type="number" name="value4">
+
+        <br>
+        <input class="btn btn-primary" type="submit" value="GO">
     </form>
 </div>
-<div class="alert alert-primary" role="alert" id="resultField">
+<div class="alert alert-warning" role="alert" id="resultField">
+    <h4>COMMAND_3 answer</h4>
     <pre id="json-viewer"></pre>
 </div>
 

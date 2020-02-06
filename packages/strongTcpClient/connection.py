@@ -134,9 +134,10 @@ class Connection:
                 if ans_msg.get_command() == baseCommands.UNKNOWN:
                     return command.unknown(msg)
 
-                return command.answer(ans_msg, *args, **kwargs)
+                return command.answer(ans_msg)
 
-            time.sleep(1)
+            #TODO тут можно написать модную штуку, типа первую секунду ждём, часто, а потом медленее и медленее
+            time.sleep(0.2)
 
     def exec_command_async(self, command, *args, **kwargs):
         '''метод для пользователя
@@ -161,9 +162,9 @@ class Connection:
                         command.unknown(msg)
                         return
 
-                    command.answer(ans_msg, *args, **kwargs)
+                    command.answer(ans_msg)
                     return
-                time.sleep(1)
+                time.sleep(0.2)
 
         msg = command.initial(self, *args, **kwargs)
         self.send_message(msg, need_answer=True)

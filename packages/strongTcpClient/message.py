@@ -42,10 +42,10 @@ class Message(dict):
             res.append(f'{field}: {self[field]}')
         return ', '.join(res)
 
-    def to_json(self):
+    def to_serializable_dict(self):
         temp_json = dict(self)
         temp_json['flags'] = str(temp_json.get('flags', ''))
-        return json.dumps(temp_json)
+        return temp_json
 
     def __init__(self, connection, id=None, command=None):
         self.my_worker = connection.worker

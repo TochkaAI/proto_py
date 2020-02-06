@@ -1,35 +1,16 @@
 {% extends "index.html" %}
 {% block content %}
 
-<form action="/cmd1" method="post" id="idForm">
-    First name:<br>
-    <input type="text" name="firstname" class="form-control"><br>
-    Last name:<br>
-    <input type="text" name="lastname" class="form-control">
-    <input type="submit" value="GO">
-</form>
-<div class="alert alert-primary" role="alert" id="resultField">
-  Это основное уведомление — check it out!
+<div class="alert alert-secondary" role="alert">
+    <h4>COMMAND_1</h4>
+    <form action="/cmd1" method="post" id="idForm">
+        <p>Форма без входящих параметров</p>
+        <br>
+        <input class="btn btn-primary" type="submit" value="GO">
+    </form>
+</div>
+<div class="alert alert-warning" role="alert" id="resultField">
+    <pre id="json-viewer"></pre>
 </div>
 
-<script type="text/javascript">
-$(document).ready(function() {
-    $("#idForm").submit(function(e) {
-        e.preventDefault(); // avoid to execute the actual submit of the form.
-
-        var form = $(this);
-        var url = form.attr('action');
-
-        $.ajax({
-               type: "POST",
-               url: url,
-               data: form.serialize(), // serializes the form's elements.
-               success: function(data)
-               {
-                    $('#resultField').text(JSON.stringify(data));
-               }
-             });
-    });
-});
-</script>
 {% endblock %}

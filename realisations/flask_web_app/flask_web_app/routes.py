@@ -1,27 +1,35 @@
-from flask import render_template
+from flask import render_template, request, jsonify
 
 from flask_web_app.remoteConn import CONNECTION
 from flask_web_app import userCommandsImpl
 from flask_web_app import app
 
 
+def get_context():
+    if CONNECTION:
+        return {
+            "conn_name": CONNECTION.getpeername(),
+            "requests": CONNECTION.request_pool,
+            "answer": CONNECTION.message_pool
+        }
+    else:
+        return {}
+
 @app.route('/')
 def hello_world():
-    context = {
-        "conn_name": CONNECTION.getpeername(),
-        "requests": CONNECTION.request_pool,
-        "answer": CONNECTION.message_pool
-    }
-    return render_template('index.html', **context)
+    return render_template('index.html', **get_context())
     # return f'Welcome to flask web app: we have connection: {CONNECTION.getpeername()}'
 
 
-@app.route('/cmd1')
+@app.route('/cmd1', methods=['GET', 'POST'])
 def cmd1():
-    if CONNECTION:
-        res = CONNECTION.exec_command_sync(userCommandsImpl.command1)
-        return res.to_json()
-    return 'No connection'
+    if request.method == 'GET':
+        return render_template('cmd1.html', **get_context())
+    if request.method == 'POST':
+        if CONNECTION:
+            res = CONNECTION.exec_command_sync(userCommandsImpl.command1).to_serializable_dict()
+            return jsonify(res)
+    raise Exception('no connection')
 
 
 @app.route('/cmd2')
@@ -32,10 +40,20 @@ def cmd2():
     return 'No connection'
 
 
-@app.route('/cmd3')
+@app.route('/cmd3', methods=['GET', 'POST'])
 def cmd3():
-    if CONNECTION:
-        res = CONNECTION.exec_command_sync(userCommandsImpl.command3)
-        return res.to_json()
-    return 'No connection'
+    if request.method == 'GET':
+        return render_template('cmd3.html', **get_context())
+    if request.method == 'POST':
+        if CONNECTION:
+            content = dict(
+                value1=request.form.get('value1', ''),
+                value2=int(request.form.get('value2') if request.form.get('value2') else 0),
+                value3=float(request.form.get('value3') if request.form.get('value3') else 0),
+                value4=int(request.form.get('value4') if request.form.get('value4') else 0)
+            )
+            res = CONNECTION.exec_command_sync(userCommandsImpl.command3, content)
+            res = res.get_content()
+            return jsonify(res)
+    raise Exception('no connection')
 
