@@ -19,12 +19,14 @@ class TcpServer(TcpWorker):
             sock, adr = self.serv_socket.accept()
             # TODO: чёт не очевидно оказалось в питоне отслеживать разъединение с сокетом. оставлю на след неделю,
             # TODO: оответственно дисконект хэндлер тоже на это завязан, по этому он пока тоже без реализации
-            conn = Connection(self, sock)
-            write_info(f'{conn.getpeername()} - was connected')
-            self.start(conn)
+            connection = Connection(self, sock)
+            write_info(f'{connection.getpeername()} - was connected')
+            self.start(connection)
+            self.connection_pool.add_connection(connection)
+            self._cmd_method_creator(connection)
 
             if new_client_handler:
-                new_client_handler(conn)
+                new_client_handler(connection)
 
     def run(self, new_connection_handler=None, disconect_connection_handler=None):
         self.serv_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)

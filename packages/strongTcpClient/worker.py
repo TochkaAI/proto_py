@@ -30,6 +30,12 @@ class TcpWorker:
         '''если пользователь пожилает задать обработчик на разрыв соеднинения то присвоем его значение тут'''
         self.disconnection_handler = handler
 
+    def _cmd_method_creator(self, connection):
+        for cmd in self.user_commands_list.values():
+            setattr(connection, cmd[0] + '_exec', cmd[2].exec_decorator(connection))
+            setattr(connection, cmd[0] + '_sync', cmd[2].sync_decorator(connection))
+            setattr(connection, cmd[0] + '_async', cmd[2].async_decorator(connection))
+
     def get_command_name(self, commandUuid):
         '''По UUID команды получаем Имя команды'''
         commands_list = {**self.base_commands_list, **self.user_commands_list}

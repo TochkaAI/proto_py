@@ -26,7 +26,8 @@ def cmd1(request):
         return render(request, 'cmd1.html', get_context())
     elif request.method == 'POST':
         if CONNECTION:
-            res = CONNECTION.exec_command_sync(userCommandsImpl.command1).to_serializable_dict()
+            # res = CONNECTION.exec_command_sync(userCommandsImpl.command1).to_serializable_dict()
+            res = CONNECTION.COMMAND_1_sync().to_serializable_dict()
             return JsonResponse(res)
 
 
@@ -35,5 +36,6 @@ def cmd3(request):
         return render(request, 'cmd3.html', get_context())
     elif request.method == 'POST':
         if CONNECTION:
-            res = CONNECTION.exec_command_sync(userCommandsImpl.command3, request.POST)
+            # res = CONNECTION.exec_command_sync(userCommandsImpl.command3, request.POST)
+            res = CONNECTION.COMMAND_3_sync(request.POST)
             return JsonResponse(res.get_content())

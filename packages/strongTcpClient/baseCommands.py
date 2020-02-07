@@ -63,4 +63,23 @@ class BaseCommand:
         в случае истечения времени сработает этот обработкич'''
         raise Exception('Вышло время ожидания')
 
+    @classmethod
+    def exec_decorator(cls, connection):
+        def function_template(*args, **kwargs):
+            connection.exec_command(cls, *args, **kwargs)
+        return function_template
+
+    @classmethod
+    def sync_decorator(cls, connection):
+        def function_template(*args, **kwargs):
+            return connection.exec_command_sync(cls, *args, **kwargs)
+        return function_template
+
+    @classmethod
+    def async_decorator(cls, connection):
+        def function_template(*args, **kwargs):
+            connection.exec_command_async(cls, *args, **kwargs)
+        return function_template
+
+
 

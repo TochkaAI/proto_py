@@ -16,6 +16,7 @@ class TcpSocket(TcpWorker):
             return
         self.start(connection)
         self.connection_pool.add_connection(connection)
+        self._cmd_method_creator(connection)
         return connection
 
     def disconnect(self):
