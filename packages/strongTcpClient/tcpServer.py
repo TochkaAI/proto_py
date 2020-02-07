@@ -1,9 +1,9 @@
 import socket
 from threading import Thread
 
-from worker import TcpWorker
-from connection import Connection
-from logger import write_info
+from .worker import TcpWorker
+from .connection import Connection
+from .logger import write_info
 
 
 class TcpServer(TcpWorker):

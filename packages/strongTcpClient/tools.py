@@ -1,9 +1,8 @@
 '''Модуль со всяческими вспомогательными функциями'''
-import json
 import datetime
-from uuid import UUID, uuid4
+from uuid import UUID
 
-from badSituations import NotImplementedCommand
+from .badSituations import NotImplementedCommand
 
 
 def tryUuid(uuid):

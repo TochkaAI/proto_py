@@ -1,8 +1,8 @@
 import json
 
-import config
-from baseCommands import BaseCommand, CLOSE_CONNECTION, PROTOCOL_COMPATIBLE, UNKNOWN, ERROR
-from message import Message
+from . import config
+from .baseCommands import BaseCommand, CLOSE_CONNECTION, PROTOCOL_COMPATIBLE, UNKNOWN, ERROR
+from .message import Message
 
 
 class Error(BaseCommand):
@@ -40,8 +40,8 @@ class ProtocolCompatibleCommand(BaseCommand):
     @staticmethod
     def initial(conn):
         msg = conn.create_command_msg(PROTOCOL_COMPATIBLE)
-        msg.set_protocol_version_high(config.protocolVersionLow)
-        msg.set_protocol_version_low(config.protocolVersionHigh)
+        msg.set_protocol_version_high(config.PROTOCOL_VERSION_LOW)
+        msg.set_protocol_version_low(config.PROTOCOL_VERSION_HIGH)
         msg.set_max_time_life(5)
         return msg
 
@@ -60,16 +60,16 @@ class ProtocolCompatibleCommand(BaseCommand):
                 return True
             if versionLow > versionHigh:
                 return False
-            if versionHigh < config.protocolVersionLow:
+            if versionHigh < config.PROTOCOL_VERSION_LOW:
                 return False
-            if versionLow > config.protocolVersionHigh:
+            if versionLow > config.PROTOCOL_VERSION_HIGH:
                 return False
             return True
-        if not config.checkProtocolVersion:
+        if not config.CHECK_PROTOCOL_VERSION:
             return
-        if not protocol_compatible(msg.get('protocolVersionLow'), msg.get('protocolVersionHigh')):
-            message = f'Protocol versions incompatible. This protocol version: {config.protocolVersionLow}-{config.protocolVersionHigh}. ' \
-                  f'Remote protocol version: {msg.get("protocolVersionLow")}-{msg.get("protocolVersionHigh")}'
+        if not protocol_compatible(msg.get('PROTOCOL_VERSION_LOW'), msg.get('PROTOCOL_VERSION_HIGH')):
+            message = f'Protocol versions incompatible. This protocol version: {config.PROTOCOL_VERSION_LOW}-{config.PROTOCOL_VERSION_HIGH}. ' \
+                  f'Remote protocol version: {msg.get("PROTOCOL_VERSION_LOW")}-{msg.get("PROTOCOL_VERSION_HIGH")}'
             connection.exec_command_sync(CloseConnectionCommand, 0, message)
             return False
         return True

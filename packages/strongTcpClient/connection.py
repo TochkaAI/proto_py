@@ -3,11 +3,11 @@ import time
 import uuid
 from threading import Thread
 
-import baseCommands
-from const import JSON_PROTOCOL_FORMAT
-from message import Message
-from messagePool import MessagePool
-from logger import write_info
+from . import baseCommands
+from .const import JSON_PROTOCOL_FORMAT
+from .message import Message
+from .messagePool import MessagePool
+from .logger import write_info
 # from strongTcpClient.badSituations import UnknownCommandSend
 
 

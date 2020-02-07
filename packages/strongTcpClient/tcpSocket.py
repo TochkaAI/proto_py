@@ -1,6 +1,6 @@
-from connection import Connection
-from worker import TcpWorker
-from logger import write_info
+from .connection import Connection
+from .worker import TcpWorker
+from .logger import write_info
 
 
 class TcpSocket(TcpWorker):

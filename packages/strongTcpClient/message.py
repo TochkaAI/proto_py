@@ -2,10 +2,10 @@ import json
 from copy import copy
 from uuid import uuid4
 
-from badSituations import NotConnectionException, UnknownCommandRecieved
-from logger import write_info
-from tools import tryUuid
-from flags import MsgFlag, Type
+from .badSituations import NotConnectionException, UnknownCommandRecieved
+from .logger import write_info
+from .tools import tryUuid
+from .flags import MsgFlag, Type
 
 
 class Message(dict):
@@ -19,8 +19,8 @@ class Message(dict):
     Флаги
     Мин\Макс время жизни
     '''
-    TCP_FIELDS = ['id', 'command', 'flags', 'content', 'protocolVersionLow',
-                  'protocolVersionHigh', 'tags', 'maxTimeLife']
+    TCP_FIELDS = ['id', 'command', 'flags', 'content', 'PROTOCOL_VERSION_LOW',
+                  'PROTOCOL_VERSION_HIGH', 'tags', 'maxTimeLife']
 
     def __str__(self):
         '''Метод для серриализации в строку для записи объекта в логах'''
@@ -93,10 +93,10 @@ class Message(dict):
         self['flags'].set_flag_value('contentIsEmpty', 0 if content else 1)
 
     def set_protocol_version_low(self, version):
-        self['protocolVersionLow'] = version
+        self['PROTOCOL_VERSION_LOW'] = version
 
     def set_protocol_version_high(self, version):
-        self['protocolVersionHigh'] = version
+        self['PROTOCOL_VERSION_HIGH'] = version
 
     def get_id(self):
         return self['id']
@@ -182,7 +182,7 @@ class Message(dict):
         msg = Message(connection, id=recieved_dict['id'], command=recieved_dict['command'])
         if recieved_dict.get('flags'):
             msg['flags'] = MsgFlag.from_digit(recieved_dict.get('flags'))
-        for key in ['content', 'tags', 'maxTimeLife', 'protocolVersionLow', 'protocolVersionHigh']:
+        for key in ['content', 'tags', 'maxTimeLife', 'PROTOCOL_VERSION_LOW', 'PROTOCOL_VERSION_HIGH']:
             if recieved_dict.get(key):
                 msg[key] = recieved_dict.get(key)
 
