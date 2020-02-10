@@ -15,11 +15,11 @@ def get_context():
             "conn_name": CONNECTION.getpeername(),
             "requests": CONNECTION.request_pool,
             "answer": CONNECTION.message_pool,
-            "user_name": current_user.name
+            "user_name": current_user.name if current_user.is_authenticated else ''
         }
     else:
         return {
-            "user_name": current_user.name
+            "user_name": current_user.name if current_user.is_authenticated else ''
         }
 
 @routes.route('/')
