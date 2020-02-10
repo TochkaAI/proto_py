@@ -1,4 +1,4 @@
-from . import userCommands, userCommandsImpl
+import userCommands, userCommandsImpl
 from packages.strongTcpClient.tcpSocket import TcpSocket
 
 

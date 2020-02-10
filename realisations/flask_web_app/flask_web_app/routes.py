@@ -1,8 +1,11 @@
 from flask import render_template, request, jsonify
+from flask import Blueprint
 
-from .remoteConn import CONNECTION
-from . import userCommandsImpl
-from . import app
+from remoteConn import CONNECTION
+import userCommandsImpl
+
+
+routes = Blueprint('routes', __name__)
 
 
 def get_context():
@@ -15,13 +18,13 @@ def get_context():
     else:
         return {}
 
-@app.route('/')
+@routes.route('/')
 def hello_world():
     return render_template('index.html', **get_context())
     # return f'Welcome to flask web app: we have connection: {CONNECTION.getpeername()}'
 
 
-@app.route('/cmd1', methods=['GET', 'POST'])
+@routes.route('/cmd1', methods=['GET', 'POST'])
 def cmd1():
     if request.method == 'GET':
         return render_template('cmd1.html', **get_context())
@@ -32,7 +35,7 @@ def cmd1():
     raise Exception('no connection')
 
 
-@app.route('/cmd2')
+@routes.route('/cmd2')
 def cmd2():
     if CONNECTION:
         res = CONNECTION.exec_command_sync(userCommandsImpl.command2)
@@ -40,7 +43,7 @@ def cmd2():
     return 'No connection'
 
 
-@app.route('/cmd3', methods=['GET', 'POST'])
+@routes.route('/cmd3', methods=['GET', 'POST'])
 def cmd3():
     if request.method == 'GET':
         return render_template('cmd3.html', **get_context())
