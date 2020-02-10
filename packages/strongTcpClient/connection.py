@@ -25,9 +25,15 @@ class Connection:
 
         self.socket = socket_
 
+    def is_connected(self):
+        return self.fileno() != -1
+
     def getpeername(self):
         '''обёртка для работы с сокетом спрятанным внутри своего лксса'''
-        return self.socket.getpeername()
+        if self.is_connected():
+            return self.socket.getpeername()
+        else:
+            return 'closed connection'
 
     def send(self, bdata):
         '''обёртка для работы с сокетом спрятанным внутри своего лксса'''
@@ -40,6 +46,10 @@ class Connection:
     def close(self):
         '''обёртка для работы с сокетом спрятанным внутри своего лксса'''
         return self.socket.close()
+
+    def fileno(self):
+        '''обёртка над сокетом'''
+        return self.socket.fileno()
 
     def msend(self, bdata):
         '''обёртка для работы с методом send для нашей реализации протокола,
@@ -66,10 +76,6 @@ class Connection:
         answer_size = int.from_bytes(banswer_size, 'big')
         ball_answer = self.socket.recv(answer_size)
         return ball_answer.decode()
-
-    def fileno(self):
-        '''обёртка над сокетом'''
-        return self.socket.fileno()
 
     def send_hello(self):
         '''метод отправки первичного приветсвия, заключается в том,

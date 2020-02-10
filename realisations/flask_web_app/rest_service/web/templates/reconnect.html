@@ -1,0 +1,14 @@
+{% extends "index.html" %}
+{% block reconnect %}
+
+    {% if reconectsuccess %}
+    <div class="alert alert-success" role="alert">
+        Succes
+    </div>
+    {% else %}
+    <div class="alert alert-danger" role="alert">
+        Failed
+    </div>
+    {% endif %}
+
+{% endblock %}

@@ -14,7 +14,9 @@ def create_app():
                 static_folder='web/static',
                 template_folder='web/templates'
                 )
+    app.config.from_pyfile('config.py')
     app.secret_key = "super secret key"
+
     db.init_app(app)
 
     login_manager = LoginManager()

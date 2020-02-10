@@ -59,11 +59,13 @@
             </div>
             <h2>Info:</h2>
             <div class="container-fluid">
-                {% if conn_name %}
+                {% if connect_is_connected %}
                 <p>Конект установлен: {{conn_name}}</p>
                 {% else %}
                 <p>Нет конекта</p>
+                <p><a href="/connect">подключиться</a></p>
                 {% endif %}
+                {% block reconnect %} {% endblock %}
                 <h3>conncetion req pools:</h3>
                 <div class="container-fluid">
                     <div class="alert alert-warning" role="alert">
