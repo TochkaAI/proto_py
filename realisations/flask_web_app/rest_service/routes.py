@@ -1,8 +1,9 @@
 from flask import render_template, request, jsonify
 from flask import Blueprint
+from flask_login import current_user
 
-from remoteConn import CONNECTION
-import userCommandsImpl
+from .remoteConn import CONNECTION
+from . import userCommandsImpl
 
 
 routes = Blueprint('routes', __name__)
@@ -13,10 +14,13 @@ def get_context():
         return {
             "conn_name": CONNECTION.getpeername(),
             "requests": CONNECTION.request_pool,
-            "answer": CONNECTION.message_pool
+            "answer": CONNECTION.message_pool,
+            "user_name": current_user.name
         }
     else:
-        return {}
+        return {
+            "user_name": current_user.name
+        }
 
 @routes.route('/')
 def hello_world():

@@ -1,6 +1,6 @@
 from packages.strongTcpClient import Message
 from packages.strongTcpClient import BaseCommand
-from userCommands import (
+from .userCommands import (
         COMMAND_1,
         COMMAND_2,
         COMMAND_3,
