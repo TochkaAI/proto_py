@@ -2,18 +2,20 @@ import uuid
 from threading import Thread
 
 from .badSituations import UnknownCommandRecieved
+from .commandList import CommandList
 from .logger import write_info
 from . import baseCommands
 from . import baseCommandsImpl
 from .baseCommandsImpl import ProtocolCompatibleCommand, CloseConnectionCommand, UnknownCommand
 from .connectionPool import ConnectionPool
 from .message import Message
-from .tools import get_command_structs
-# from const import JSON_PROTOCOL_FORMAT
 
 
 class TcpWorker:
     '''Главная сущность осуществляющая основную логику общения между клиентами в рамках оговоренного протокола'''
+    user_commands_list: CommandList
+    base_commands_list: CommandList
+
     def __init__(self, ip, port, client_commands, client_command_impl):
         self.ip = ip
         self.port = port
@@ -21,13 +23,13 @@ class TcpWorker:
         self.connection_pool = ConnectionPool()
         self.disconnection_handler = None
 
-        self.base_commands_list = get_command_structs(baseCommands, baseCommandsImpl)
-        self.user_commands_list = get_command_structs(client_commands, client_command_impl)
+        self.base_commands_list = CommandList(baseCommands, baseCommandsImpl)
+        self.user_commands_list = CommandList(client_commands, client_command_impl)
 
         self.unknown_command_list = []
 
     def _set_disconnection_handler(self, handler):
-        '''если пользователь пожилает задать обработчик на разрыв соеднинения то присвоем его значение тут'''
+        """если пользователь пожилает задать обработчик на разрыв соеднинения то присвоем его значение тут"""
         self.disconnection_handler = handler
 
     def _cmd_method_creator(self, connection):
@@ -37,53 +39,45 @@ class TcpWorker:
             setattr(connection, cmd[0] + '_async', cmd[2].async_decorator(connection))
 
     def get_command_name(self, commandUuid):
-        '''По UUID команды получаем Имя команды'''
-        commands_list = {**self.base_commands_list, **self.user_commands_list}
-        if commandUuid in commands_list:
-            return commands_list[commandUuid][0]
-        return None
+        """По UUID команды получаем Имя команды из списка базовых или из списка пользовательских"""
+        return self.base_commands_list.get_command_name(commandUuid) or \
+               self.user_commands_list.get_command_name(commandUuid)
 
-    def base_commands_handlers(self, msg):
-        '''обработки базовых команд'''
-        if msg.get_command() == baseCommands.PROTOCOL_COMPATIBLE:
-            ProtocolCompatibleCommand.handler(msg)
-        elif msg.get_command() == baseCommands.UNKNOWN:
-            UnknownCommand.handler(msg)
-        elif msg.get_command() == baseCommands.CLOSE_CONNECTION:
-            CloseConnectionCommand.handler(msg)
-
-    def user_commands_handlers(self, msg):
-        '''обработка пользовательских команд'''
-        # TODO: надо добавить прверку здесь на существование такой команды и в ответ отправлять UnknownCommand
-        command = self.user_commands_list[msg.get_command()][2]
-        command.handler(msg)
+    def command_handler(self, msg):
+        if msg.get_command() in self.base_commands_list:
+            """обработки базовых команд"""
+            command = self.base_commands_list.get_command_impl(msg.get_command())
+        else:
+            """обработка пользовательских команд"""
+            command = self.user_commands_list.get_command_impl(msg.get_command())
+        # и теперь закинем обрабатывать это в отдельный поток, чтоб не стопорило получение новых команд
+        thread = Thread(target=command.handler, args=(msg,))
+        thread.daemon = True
+        thread.start()
 
     def start_listening(self, connection):
-        '''эта команда для конекции запускает бесконечный цикл прослушивания сокета'''
+        """эта команда для конекции запускает бесконечный цикл прослушивания сокета"""
         thread = Thread(target=self.command_listener, args=(connection,))
         thread.daemon = True
         thread.start()
 
     def command_listener(self, connection):
-        '''метод запускается в отдельном потоке и мониторит входящие пакеты
-        пытается их распарсить и выполнить их соответсвующу обработку'''
+        """метод запускается в отдельном потоке и мониторит входящие пакеты
+        пытается их распарсить и выполнить их соответсвующу обработку"""
         while True:
             answer = connection.mrecv()
             if answer:
                 write_info(f'[{connection.getpeername()}] Msg JSON receeved: {answer}')
                 try:
                     msg = Message.from_string(connection, answer)
-                except UnknownCommandRecieved as unknw_except:
+                except UnknownCommandRecieved:
                     write_info(f'[{connection.getpeername()}] Unknown msg received')
                     connection.exec_command(UnknownCommand, answer)
                 else:
                     write_info(f'[{connection.getpeername()}] Msg received: {msg}')
                     # Это команда с той стороны, её нужно прям тут и обработать!
                     if msg.get_id() not in connection.request_pool:
-                        if msg.get_command() in self.base_commands_list:
-                            self.base_commands_handlers(msg)
-                        else:
-                            self.user_commands_handlers(msg)
+                        self.command_handler(msg)
                     # Это ответы, который нужно обработать
                     else:
                         connection.message_pool.add_message(msg)

@@ -44,13 +44,16 @@ def like_client():
     finally:
         tcp_worker.disconnect()
 
+
 def like_server():
     connection = None
+
     def client_add_handler(conn):
         nonlocal connection
         connection = conn
 
     def client_dis_handler(conn):
+        print(f'Some bilbo was disconnected: {conn.hist_peername} {conn.hist_fileno}')
         nonlocal connection
         if conn == connection:
             connection = None
@@ -81,8 +84,9 @@ def like_server():
     finally:
         listening_worker.stop()
 
+
 if __name__ == '__main__':
-    like_client()
-    # like_server()
+    # like_client()
+    like_server()
 
     print('finish')

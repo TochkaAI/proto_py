@@ -17,8 +17,6 @@ class TcpServer(TcpWorker):
     def connect_listener(self, new_client_handler):
         while True:
             sock, adr = self.serv_socket.accept()
-            # TODO: чёт не очевидно оказалось в питоне отслеживать разъединение с сокетом. оставлю на след неделю,
-            # TODO: оответственно дисконект хэндлер тоже на это завязан, по этому он пока тоже без реализации
             connection = Connection(self, sock)
             write_info(f'{connection.getpeername()} - was connected')
             self.start(connection)
