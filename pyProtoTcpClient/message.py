@@ -134,7 +134,7 @@ class Message(dict):
             write_error("Index value not in range [0..254]")
             return 0
 
-        if 'tag' not in self or len(self.get('tags')) < num + 1:
+        if 'tags' not in self or len(self.get('tags')) < num + 1:
             return 0
 
         return self.get('tags')[num]

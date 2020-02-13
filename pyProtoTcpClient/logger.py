@@ -3,6 +3,7 @@
 ЗЫ тут я особо пока вообще не парился'''
 import logging
 # from logging.handlers import TimedRotatingFileHandler
+from pyproto.pyProtoTcpClient.config import MAX_LOG_LENGHT
 
 logging.basicConfig(
     filename='app.log',
@@ -11,18 +12,19 @@ logging.basicConfig(
     level=logging.INFO)
 
 
-def print_console_decor(decor_func):
+def msg_handler(decor_func):
     def wrapper(msg):
+        msg = msg[:MAX_LOG_LENGHT]
         print(msg)  # закоментировать тут, чтоб убрать вывод в консоль
         decor_func(msg)
     return wrapper
 
 
-@print_console_decor
+@msg_handler
 def write_info(msg):
     logging.info(msg)
 
 
-@print_console_decor
+@msg_handler
 def write_error(msg):
     logging.error(msg)
