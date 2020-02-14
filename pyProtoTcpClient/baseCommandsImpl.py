@@ -111,5 +111,5 @@ class UnknownCommand(BaseCommand):
         connection.worker.unknown_command_list.append(unknown_command_uid)
         for req_msg in msg.my_connection.request_pool.values():
             if req_msg.get_command() == unknown_command_uid:
-                fake_msg = Message(connection, id=req_msg.get_id(), command=UNKNOWN)
+                fake_msg = Message(connection, id_=req_msg.get_id(), command=UNKNOWN)
                 msg.my_connection.message_pool.add_message(fake_msg)

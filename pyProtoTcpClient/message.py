@@ -47,13 +47,13 @@ class Message(dict):
         temp_json['flags'] = str(temp_json.get('flags', ''))
         return temp_json
 
-    def __init__(self, connection, id=None, command=None):
+    def __init__(self, connection, id_=None, command=None):
         self.my_worker = connection.worker
         self.my_connection = connection
         # ид или создаётся, если это инициализация нового сообщения, или задаётся, если это парсинг сообщения из сети
-        if id is not None:
-            if tryUuid(id):
-                self['id'] = id
+        if id_ is not None:
+            if tryUuid(id_):
+                self['id'] = id_
             else:
                 raise ValueError('Некорректный формат идентификатора пакета')
         else:
@@ -159,13 +159,12 @@ class Message(dict):
     '''===========Конец кучки сеттеров и геттеров========================================='''
     '''==================================================================================='''
 
-    def send_message(self):
-        '''В случае если нужно отправить ответ на команду, у нас есть все данные и о воркере и о конеции
+    def send_answer(self):
+        """В случае если нужно отправить ответ на команду, у нас есть все данные и о воркере и о конеции
         можно использовать метод send_message от объекта Message
-        В ином случае, нужно отправлять сообщение используя метод Connection::send_message'''
+        В ином случае, нужно отправлять сообщение используя метод Connection::send_message"""
         if self.get_type() == Type.Answer and self.my_connection is not None:
-            self.my_connection.msend(self.get_bytes())
-            write_info(f'[{self.my_connection.getpeername()}] Msg JSON send: {self.get_bytes().decode()}')
+            self.my_connection.send_message(self)
         else:
             raise NotConnectionException('отсутсвует коннекцию, отправка невозможна')
 
@@ -173,7 +172,7 @@ class Message(dict):
     с некими пресетами свойств(флагов, типов, контентов и т.п.'''
     @staticmethod
     def command(connection, command_uuid):
-        '''Статический метод создания месседжа с типом команды'''
+        """Статический метод создания месседжа с типом команды"""
         msg = Message(connection, command=command_uuid)
         msg.set_type(Type.Command)
         return msg
@@ -191,7 +190,7 @@ class Message(dict):
         '''статический медо дессериализации меседжа из json строки приходящей из "сети"'''
         # TODO перенести этот метод или в воркера или в конекцию
         recieved_dict = json.loads(string_msg)
-        msg = Message(connection, id=recieved_dict['id'], command=recieved_dict['command'])
+        msg = Message(connection, id_=recieved_dict['id'], command=recieved_dict['command'])
         if recieved_dict.get('flags'):
             msg['flags'] = MsgFlag.from_digit(recieved_dict.get('flags'))
         for key in ['content', 'tags', 'maxTimeLife', 'PROTOCOL_VERSION_LOW', 'PROTOCOL_VERSION_HIGH']:
