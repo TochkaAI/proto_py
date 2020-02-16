@@ -4,9 +4,9 @@ import setuptools
 #     long_description = fh.read()
 
 setuptools.setup(
-    name="pyProtoTcpClient",
+    name="pyproto",
     version="0.0.4",
-    description="package with pyProtoTcpClient for PointOfView",
+    description="package with pyproto for PointOfView",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",

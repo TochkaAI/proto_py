@@ -3,7 +3,7 @@
 ЗЫ тут я особо пока вообще не парился'''
 import logging
 # from logging.handlers import TimedRotatingFileHandler
-from pyproto.pyProtoTcpClient.config import MAX_LOG_LENGHT
+from pyproto.pyproto.config import MAX_LOG_LENGHT
 
 logging.basicConfig(
     filename='app.log',
