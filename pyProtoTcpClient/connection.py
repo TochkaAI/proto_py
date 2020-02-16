@@ -3,7 +3,7 @@ import time
 import uuid
 from threading import Thread
 
-from . import baseCommands
+from . import baseCommands, config
 from .const import JSON_PROTOCOL_FORMAT
 from .message import Message
 from .messagePool import MessagePool
@@ -120,13 +120,19 @@ class Connection:
         if need_answer:
             self.request_pool.add_message(message)
 
+    def max_time_life_prolongation(self, message_id, command_id, sec_to_add):
+        msg = self.request_pool.get_message(message_id)
+        if not msg or msg.get_command() != command_id:
+            raise Exception('Попытка продлить время несуществубщей команды')
+        msg.set_max_time_life(msg.get_max_time_life() + sec_to_add)
+
     def exec_command(self, command, *args, **kwargs):
         """подразумевается что это метод для пользователя
         отправка сущности "команды" у которой реализованы соответсвующие обработчики
         по сути является обёрткой на методом send_message
         не подразумевает получение ответа"""
         msg = command.initial(self, *args, **kwargs)
-        self.send_message(msg, self)
+        self.send_message(msg, need_answer=False)
 
     def exec_command_sync(self, command, *args, **kwargs):
         """метод для пользователя
@@ -134,17 +140,19 @@ class Connection:
         msg = command.initial(self, *args, **kwargs)
         self.send_message(msg, need_answer=True)
 
-        max_time_life = msg.get_max_time_life()
-        t_end = None
-        if max_time_life:
-            t_end = time.time() + max_time_life
+        time_of_start = time.time()
+        time_of_end = time_of_start + (msg.get_max_time_life() or config.MAX_TIMEOUT_SEC)
         while True:
-            if t_end and time.time() > t_end:
-                self.request_pool.dell_message(msg)
-                return command.timeout(msg)
+            if time.time() > time_of_end:
+                # время выполнения могло быть сдвинуто по инициативе другой стороны,
+                # тогда у сообщения измениться параметр max_tile_life, пересчитаем его ещё разок
+                time_of_end = time_of_start + (msg.get_max_time_life() or config.MAX_TIMEOUT_SEC)
+                if time.time() > time_of_end:
+                    self.request_pool.dell_message(msg)
+                    return command.timeout(msg)
 
             if msg.get_id() in self.message_pool:
-                ans_msg = self.message_pool[msg.get_id()]
+                ans_msg = self.message_pool.get_message(msg.get_id())
                 self.request_pool.dell_message(msg)
                 self.message_pool.dell_message(ans_msg)
 
@@ -160,18 +168,20 @@ class Connection:
         """метод для пользователя
         отправка сущности "команда", с последущией обработкой ответа в асинхронном режиме"""
         def answer_handler():
-            max_time_life = msg.get_max_time_life()
-            t_end = None
-            if max_time_life:
-                t_end = time.time() + max_time_life
+            time_of_start = time.time()
+            time_of_end = time_of_start + (msg.get_max_time_life() or config.MAX_TIMEOUT_SEC)
             while True:
-                if t_end and time.time() > t_end:
-                    self.request_pool.dell_message(msg)
-                    command.timeout(msg)
-                    return
+                if time.time() > time_of_end:
+                    # время выполнения могло быть сдвинуто по инициативе другой стороны,
+                    # тогда у сообщения измениться параметр max_tile_life, пересчитаем его ещё разок
+                    time_of_end = time_of_start + (msg.get_max_time_life() or config.MAX_TIMEOUT_SEC)
+                    if time.time() > time_of_end:
+                        self.request_pool.dell_message(msg)
+                        command.timeout(msg)
+                        return
 
                 if msg.get_id() in self.message_pool:
-                    ans_msg = self.message_pool[msg.get_id()]
+                    ans_msg = self.message_pool.get_message(msg.get_id())
                     self.request_pool.dell_message(msg)
                     self.message_pool.dell_message(ans_msg)
 

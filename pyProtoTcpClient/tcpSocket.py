@@ -13,7 +13,7 @@ class TcpSocket(TcpWorker):
             connection.connect((self.ip, self.port))
         except ConnectionRefusedError as ex:
             write_info('Не удалось, установить соединение, удалённый сервер не доступен')
-            return
+            return None
         self.start(connection)
         self.connection_pool.add_connection(connection)
         self._cmd_method_creator(connection)

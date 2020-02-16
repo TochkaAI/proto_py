@@ -3,6 +3,7 @@
 '''
 import sys
 
+from .message import Message
 from .logger import write_info
 
 Unknown = "UNKNOWN"
@@ -37,14 +38,14 @@ class BaseCommand:
         raise NotImplemented('не переопределена реализация методы инициализации')
 
     @staticmethod
-    def answer(msg):
+    def answer(msg: Message):
         """метод обработчик, срабатывает в случае когда на команду приходит ответ, с тем же идентификатором
         надо понимать что сюда мы можем попасть с сообщеним типа Command и Answer"""
         pass
         # raise NotImplemented('не переопределена реализация методы обработки ответа')
 
     @staticmethod
-    def handler(msg):
+    def handler(msg: Message):
         """метод обработчик входящей команды, идентификатор которой не найден в списке запросов
         тоесть скорее всего это значит что вторая сторона, отправила команду
         но так же сюда можно попасть по какой либо ошибке.
@@ -52,13 +53,13 @@ class BaseCommand:
         raise Exception('не переопределена реализация методы обработки сообщения')
 
     @staticmethod
-    def unknown(msg):
+    def unknown(msg: Message):
         """обработчик на ситуацию когда в ответ на команду приходит сообщение о том что данная команда неизвестна"""
         write_info(f'[{msg.my_connection.getpeername()}] Команда неизвестна для удалённого клиента! {msg.get_id()}')
         # raise Exception('Команда неизвестна для удалённого клиента!')
 
     @staticmethod
-    def timeout(msg):
+    def timeout(msg: Message):
         """если в сообщение задать максимальное время выполнения команды,
         в случае истечения времени сработает этот обработкич"""
         raise Exception('Вышло время ожидания')

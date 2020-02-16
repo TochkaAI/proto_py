@@ -3,7 +3,7 @@ from copy import copy
 from uuid import uuid4
 
 from .badSituations import NotConnectionException, UnknownCommandRecieved
-from .logger import write_info, write_error
+from .logger import write_error
 from .tools import tryUuid
 from .flags import MsgFlag, Type, ExecStatus
 
@@ -47,7 +47,7 @@ class Message(dict):
         temp_json['flags'] = str(temp_json.get('flags', ''))
         return temp_json
 
-    def __init__(self, connection, id_=None, command=None):
+    def __init__(self, connection, id_=None, command_uuid=None):
         self.my_worker = connection.worker
         self.my_connection = connection
         # ид или создаётся, если это инициализация нового сообщения, или задаётся, если это парсинг сообщения из сети
@@ -61,10 +61,10 @@ class Message(dict):
 
         # если при создании передан уид команды, сразу проверим зарегистрирована ли такая команда,
         # и пропишем всю информацию в объекте
-        if command is not None:
-            comm_name = self.my_worker.get_command_name(command)
+        if command_uuid is not None:
+            comm_name = self.my_worker.get_command_name(command_uuid)
             if comm_name is not None:
-                self['command'] = command
+                self['command'] = command_uuid
                 self['Command'] = comm_name
             else:
                 raise UnknownCommandRecieved('Неизвестный идентификатор команды')
@@ -110,6 +110,7 @@ class Message(dict):
         return self['id']
 
     def get_command(self):
+        """Возвращает str(UUID) команды сообщения"""
         return self['command']
 
     def get_content(self):
@@ -140,7 +141,7 @@ class Message(dict):
         return self.get('tags')[num]
 
     def set_max_time_life(self, max_time_life):
-        '''устанавлдивает время ожидания в '''
+        """устанавлдивает время ожидания в секундах"""
         self['maxTimeLife'] = max_time_life
 
     def get_max_time_life(self):
@@ -173,14 +174,14 @@ class Message(dict):
     @staticmethod
     def command(connection, command_uuid):
         """Статический метод создания месседжа с типом команды"""
-        msg = Message(connection, command=command_uuid)
+        msg = Message(connection, command_uuid=command_uuid)
         msg.set_type(Type.Command)
         return msg
 
     @staticmethod
     def answer(connection, command_uuid):
         '''Статический метод создания месседжа с типом ответ'''
-        msg = Message(connection, command=command_uuid)
+        msg = Message(connection, command_uuid=command_uuid)
         msg.set_type(Type.Answer)
         return msg
     '''Конец кучки'''
@@ -190,7 +191,7 @@ class Message(dict):
         '''статический медо дессериализации меседжа из json строки приходящей из "сети"'''
         # TODO перенести этот метод или в воркера или в конекцию
         recieved_dict = json.loads(string_msg)
-        msg = Message(connection, id_=recieved_dict['id'], command=recieved_dict['command'])
+        msg = Message(connection, id_=recieved_dict['id'], command_uuid=recieved_dict['command'])
         if recieved_dict.get('flags'):
             msg['flags'] = MsgFlag.from_digit(recieved_dict.get('flags'))
         for key in ['content', 'tags', 'maxTimeLife', 'PROTOCOL_VERSION_LOW', 'PROTOCOL_VERSION_HIGH']:
