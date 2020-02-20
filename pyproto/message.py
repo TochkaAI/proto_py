@@ -9,7 +9,7 @@ from .flags import MsgFlag, Type, ExecStatus
 
 
 class Message(dict):
-    '''Объект серриализация которого "летает" по сети
+    """Объект серриализация которого "летает" по сети
     он хранит в себе всю необходимую информаци о пакете который мы хотим отправить по сети
     Ид
     Тип
@@ -18,12 +18,12 @@ class Message(dict):
     Тэги
     Флаги
     Мин\Макс время жизни
-    '''
+    """
     TCP_FIELDS = ['id', 'command', 'flags', 'content', 'PROTOCOL_VERSION_LOW',
                   'PROTOCOL_VERSION_HIGH', 'tags', 'maxTimeLife']
 
     def __str__(self):
-        '''Метод для серриализации в строку для записи объекта в логах'''
+        """Метод для серриализации в строку для записи объекта в логах"""
         res = []
 
         # Определимся с типом сообщения
@@ -164,10 +164,11 @@ class Message(dict):
         """В случае если нужно отправить ответ на команду, у нас есть все данные и о воркере и о конеции
         можно использовать метод send_message от объекта Message
         В ином случае, нужно отправлять сообщение используя метод Connection::send_message"""
-        if self.get_type() == Type.Answer and self.my_connection is not None:
+        if self.my_connection is None:
+            raise NotConnectionException('отсутсвует коннекция, отправка невозможна')
+
+        if self.get_type() == Type.Answer:
             self.my_connection.send_message(self)
-        else:
-            raise NotConnectionException('отсутсвует коннекцию, отправка невозможна')
 
     '''кучка статических методов для создания наиболее популярных типов месседжов
     с некими пресетами свойств(флагов, типов, контентов и т.п.'''
@@ -180,7 +181,7 @@ class Message(dict):
 
     @staticmethod
     def answer(connection, command_uuid):
-        '''Статический метод создания месседжа с типом ответ'''
+        """Статический метод создания месседжа с типом ответ"""
         msg = Message(connection, command_uuid=command_uuid)
         msg.set_type(Type.Answer)
         return msg
@@ -188,7 +189,7 @@ class Message(dict):
 
     @staticmethod
     def from_string(connection, string_msg):
-        '''статический медо дессериализации меседжа из json строки приходящей из "сети"'''
+        """статический медо дессериализации меседжа из json строки приходящей из "сети\""""
         # TODO перенести этот метод или в воркера или в конекцию
         recieved_dict = json.loads(string_msg)
         msg = Message(connection, id_=recieved_dict['id'], command_uuid=recieved_dict['command'])

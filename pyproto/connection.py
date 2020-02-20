@@ -42,7 +42,7 @@ class Connection:
         if self.is_connected():
             return self.socket.getpeername()
         else:
-            return "(None, None) closed"
+            return self.hist_peername
 
     def send(self, bdata):
         """обёртка для работы с сокетом спрятанным внутри своего лксса"""

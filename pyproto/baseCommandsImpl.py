@@ -15,10 +15,6 @@ class CloseConnectionCommand(BaseCommand):
     @staticmethod
     def initial(conn, code, desc):
         msg = conn.create_command_msg(CLOSE_CONNECTION)
-        content = dict(
-            code=code,
-            description=desc
-        )
         return msg
 
     @staticmethod
@@ -27,11 +23,11 @@ class CloseConnectionCommand(BaseCommand):
         return True
 
     @staticmethod
-    def handler(conn, msg):
+    def handler(msg):
         answer = msg.get_answer_copy()
         answer.set_content(None)
-        conn.send_message(answer)
-        conn.close()
+        answer.send_answer()
+        answer.my_connection.close()
 
 
 class ProtocolCompatibleCommand(BaseCommand):
