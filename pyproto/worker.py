@@ -1,4 +1,3 @@
-import uuid
 from threading import Thread
 
 from .badSituations import UnknownCommandRecieved
@@ -12,7 +11,7 @@ from .message import Message
 
 
 class TcpWorker:
-    '''Главная сущность осуществляющая основную логику общения между клиентами в рамках оговоренного протокола'''
+    """Главная сущность осуществляющая основную логику общения между клиентами в рамках оговоренного протокола"""
     user_commands_list: CommandList
     base_commands_list: CommandList
 
@@ -33,7 +32,7 @@ class TcpWorker:
         self.disconnection_handler = handler
 
     def _cmd_method_creator(self, connection):
-        for cmd in self.user_commands_list.values():
+        for cmd in list(self.user_commands_list.values()) + list(self.base_commands_list.values()):
             setattr(connection, cmd[0] + '_exec', cmd[2].exec_decorator(connection))
             setattr(connection, cmd[0] + '_sync', cmd[2].sync_decorator(connection))
             setattr(connection, cmd[0] + '_async', cmd[2].async_decorator(connection))
@@ -82,16 +81,16 @@ class TcpWorker:
                     else:
                         connection.message_pool.add_message(msg)
             else:
-                # ЭТО означает что сервер разорвал соединение! о боги! это было так просто, почему яя этого не знал?
                 break
         # соответственно если я тут, значит у нас произошёл разрыв соединения
         self.connection_pool.del_connection(connection)
-        connection.close()
-        if self.disconnection_handler is not None:
-            self.disconnection_handler(connection)
+        if connection.is_connected():  # тут нужна проверка, потому что мы сами могли порвать соединение
+            connection.close()
+            if self.disconnection_handler is not None:
+                self.disconnection_handler(connection)
 
     def start(self, connection):
-        '''функция которая выполняет стандартный сценарий, сразу после образования Tcp соединения'''
+        """функция которая выполняет стандартный сценарий, сразу после образования Tcp соединения"""
         self.connection_pool.add_connection(connection)
         ''' После установки TCP соединения клиент отправляет на сокет сервера 16 байт (обычный uuid).
                     Это сигнатура протокола. Строковое представление сигнатуры для json формата: "fea6b958-dafb-4f5c-b620-fe0aafbd47e2".
@@ -103,7 +102,7 @@ class TcpWorker:
         self.start_listening(connection)
 
     def finish_all(self, code, description):
-        '''функция завершает все соединения предварительно отправив команду CloseConnection'''
+        """функция завершает все соединения предварительно отправив команду CloseConnection"""
         for conn in self.connection_pool.values():
             perr_name = conn.getpeername()
             conn.exec_command_sync(CloseConnectionCommand, code, description)

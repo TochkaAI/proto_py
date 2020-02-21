@@ -56,6 +56,7 @@ class Connection:
 
     def close(self):
         """обёртка для работы с сокетом спрятанным внутри своего лксса"""
+        self.socket.shutdown(socket.SHUT_RDWR)
         return self.socket.close()
 
     def fileno(self):
