@@ -19,8 +19,9 @@ class CloseConnectionCommand(BaseCommand):
         return msg
 
     @staticmethod
-    def answer(msg, code, descr):
-        msg.my_connection.close()
+    def answer(msg):
+        if msg.my_connection.is_connected():
+            msg.my_connection.close()
         return True
 
     @staticmethod
