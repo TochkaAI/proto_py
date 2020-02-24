@@ -2,12 +2,12 @@ from threading import Thread
 
 from .badSituations import UnknownCommandRecieved
 from .commandList import CommandList
+from .connection import Connection
 from .logger import write_info
 from . import baseCommands
 from . import baseCommandsImpl
 from .baseCommandsImpl import ProtocolCompatibleCommand, CloseConnectionCommand, UnknownCommand
 from .connectionPool import ConnectionPool
-from .message import Message
 
 
 class TcpWorker:
@@ -32,6 +32,10 @@ class TcpWorker:
         self.disconnection_handler = handler
 
     def _cmd_method_creator(self, connection):
+        """Создаёт у коннекции всевозможнные досупные пользовательские и базовые методы"""
+        if connection.user_command_recorded:
+            return
+        connection.user_command_recorded = True
         for cmd in list(self.user_commands_list.values()) + list(self.base_commands_list.values()):
             setattr(connection, cmd[0] + '_exec', cmd[2].exec_decorator(connection))
             setattr(connection, cmd[0] + '_sync', cmd[2].sync_decorator(connection))
@@ -60,20 +64,20 @@ class TcpWorker:
         thread.daemon = True
         thread.start()
 
-    def command_listener(self, connection):
+    def command_listener(self, connection: Connection):
         """метод запускается в отдельном потоке и мониторит входящие пакеты
         пытается их распарсить и выполнить их соответсвующу обработку"""
         while True:
-            answer = connection.mrecv()
-            if answer:
-                write_info(f'[{connection.getpeername()}] Msg JSON receeved: {answer}')
+            json_data = connection.mrecv()
+            if json_data:
+                write_info(f'[{connection.getpeername()}] JSON received: {json_data}')
                 try:
-                    msg = Message.from_string(connection, answer)
+                    msg = connection.message_from_json(json_data)  # Type: Message
                 except UnknownCommandRecieved:
                     write_info(f'[{connection.getpeername()}] Unknown msg received')
-                    connection.exec_command(UnknownCommand, answer)
+                    connection.exec_command(UnknownCommand, json_data)
                 else:
-                    write_info(f'[{connection.getpeername()}] Msg received: {msg}')
+                    write_info(f'[{connection.getpeername()}] Msg  received: {msg}')
                     # Это команда с той стороны, её нужно прям тут и обработать!
                     if msg.get_id() not in connection.request_pool:
                         self.command_handler(msg)
@@ -89,16 +93,11 @@ class TcpWorker:
             if self.disconnection_handler is not None:
                 self.disconnection_handler(connection)
 
-    def start(self, connection):
+    def run_connection(self, connection: Connection):
         """функция которая выполняет стандартный сценарий, сразу после образования Tcp соединения"""
         self.connection_pool.add_connection(connection)
-        ''' После установки TCP соединения клиент отправляет на сокет сервера 16 байт (обычный uuid).
-                    Это сигнатура протокола. Строковое представление сигнатуры для json формата: "fea6b958-dafb-4f5c-b620-fe0aafbd47e2".
-                    Если сервер присылает назад этот же uuid, то все ОК - можно работать'''
-        connection.send_hello()
-        ''' После того как сигнатуры протокола проверены клиент и сервер отправляют друг другу первое сообщение - 
-            ProtocolCompatible.'''
-        connection.exec_command_async(ProtocolCompatibleCommand)
+        self._cmd_method_creator(connection)
+        connection.start()
         self.start_listening(connection)
 
     def finish_all(self, code, description):

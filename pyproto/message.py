@@ -35,7 +35,7 @@ class Message(dict):
             type_name = 'Answer'
         elif type_value == Type.Event:
             type_name = 'Event'
-        res.append(f'Type: {type_name}')
+        res.append(f'|Type: {type_name}|')
 
         for field in self:
             if field in ['command']: continue
@@ -186,17 +186,3 @@ class Message(dict):
         msg.set_type(Type.Answer)
         return msg
     '''Конец кучки'''
-
-    @staticmethod
-    def from_string(connection, string_msg):
-        """статический медо дессериализации меседжа из json строки приходящей из "сети\""""
-        # TODO перенести этот метод или в воркера или в конекцию
-        recieved_dict = json.loads(string_msg)
-        msg = Message(connection, id_=recieved_dict['id'], command_uuid=recieved_dict['command'])
-        if recieved_dict.get('flags'):
-            msg['flags'] = MsgFlag.from_digit(recieved_dict.get('flags'))
-        for key in ['content', 'tags', 'maxTimeLife', 'PROTOCOL_VERSION_LOW', 'PROTOCOL_VERSION_HIGH']:
-            if recieved_dict.get(key):
-                msg[key] = recieved_dict.get(key)
-
-        return msg

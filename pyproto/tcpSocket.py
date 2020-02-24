@@ -10,19 +10,15 @@ class TcpSocket(TcpWorker):
         """ Порядок установки соединения """
         connection = Connection(self)
         try:
-            connection.connect((self.ip, self.port))
-            self.start(connection)
-        except ConnectionRefusedError as ex:
-            write_info('Не удалось, установить соединение, удалённый сервер не доступен')
-            return None
+            if not connection.connect((self.ip, self.port)):
+                return None
+            self.run_connection(connection)
         except TimeoutError as te:
             write_info(str(te))
             return None
         except TypeError as type_e:
             write_info(str(type_e))
             return None
-        self.connection_pool.add_connection(connection)
-        self._cmd_method_creator(connection)
 
         if disconect_connection_handler:
             self._set_disconnection_handler(disconect_connection_handler)

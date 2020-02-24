@@ -14,7 +14,7 @@ class CloseConnectionCommand(BaseCommand):
 
     @staticmethod
     def initial(conn, code, desc):
-        msg = conn.create_command_msg(CLOSE_CONNECTION)
+        msg = conn.create_command(CLOSE_CONNECTION)
         msg.set_content({"code": code, "description": desc})
         return msg
 
@@ -37,7 +37,7 @@ class ProtocolCompatibleCommand(BaseCommand):
 
     @staticmethod
     def initial(conn):
-        msg = conn.create_command_msg(PROTOCOL_COMPATIBLE)
+        msg = conn.create_command(PROTOCOL_COMPATIBLE)
         msg.set_protocol_version_high(config.PROTOCOL_VERSION_LOW)
         msg.set_protocol_version_low(config.PROTOCOL_VERSION_HIGH)
         msg.set_max_time_life(5)
@@ -84,7 +84,7 @@ class UnknownCommand(BaseCommand):
     @staticmethod
     def initial(conn, unknown_answer):
         unkwonw_data = json.loads(unknown_answer)
-        msg = conn.create_command_msg(UNKNOWN)
+        msg = conn.create_command(UNKNOWN)
         content = {
             'commandId': unkwonw_data['command'],
             'socketType': 2,

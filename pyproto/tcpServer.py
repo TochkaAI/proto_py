@@ -19,9 +19,7 @@ class TcpServer(TcpWorker):
             sock, adr = self.serv_socket.accept()
             connection = Connection(self, sock)
             write_info(f'{connection.getpeername()} - was connected')
-            self.start(connection)
-            self.connection_pool.add_connection(connection)
-            self._cmd_method_creator(connection)
+            self.run_connection(connection)
 
             if new_client_handler:
                 new_client_handler(connection)
