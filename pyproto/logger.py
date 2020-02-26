@@ -4,7 +4,7 @@
 
 
 import logging
-from pyproto.pyproto.config import MAX_LOG_LENGHT
+from .config import MAX_LOG_LENGHT
 
 LOG_FILE_NAME = 'app.log'
 

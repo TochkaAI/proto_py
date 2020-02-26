@@ -1,5 +1,5 @@
 '''вспоомгательный класс для хранения списка конекций внутри воркера'''
-from pyproto.pyproto.connection import Connection
+from .connection import Connection
 
 
 class ConnectionPool(dict):
