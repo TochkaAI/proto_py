@@ -3,10 +3,10 @@ from threading import Thread
 from .badSituations import UnknownCommandRecieved
 from .commandList import CommandList
 from .connection import Connection
-from .logger import write_info
+from .logger import write_info, set_logging_config
 from . import baseCommands
 from . import baseCommandsImpl
-from .baseCommandsImpl import ProtocolCompatibleCommand, CloseConnectionCommand, UnknownCommand
+from .baseCommandsImpl import CloseConnectionCommand, UnknownCommand
 from .connectionPool import ConnectionPool
 
 
@@ -16,6 +16,8 @@ class TcpWorker:
     base_commands_list: CommandList
 
     def __init__(self, ip, port, client_commands, client_command_impl):
+        set_logging_config()
+
         self.ip = ip
         self.port = port
 
