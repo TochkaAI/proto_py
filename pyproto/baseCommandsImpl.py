@@ -52,29 +52,28 @@ class ProtocolCompatibleCommand(BaseCommand):
     def handler(msg):
         connection = msg.my_connection
 
-        def protocol_compatible(versionLow, versionHigh):
-            if versionHigh is None and versionLow is None:
-                # Видимо ничего не надо делать
+        def protocol_compatible(version_low, version_high):
+            if version_high is None and version_low is None:
                 return True
-            if versionLow > versionHigh:
+            if version_low > version_high:
                 return False
-            if versionHigh < config.PROTOCOL_VERSION_LOW:
+            if version_high < config.PROTOCOL_VERSION_LOW:
                 return False
-            if versionLow > config.PROTOCOL_VERSION_HIGH:
+            if version_low > config.PROTOCOL_VERSION_HIGH:
                 return False
             return True
         if not config.CHECK_PROTOCOL_VERSION:
             return
         if not protocol_compatible(msg.get('PROTOCOL_VERSION_LOW'), msg.get('PROTOCOL_VERSION_HIGH')):
-            message = f'Protocol versions incompatible. This protocol version: {config.PROTOCOL_VERSION_LOW}-{config.PROTOCOL_VERSION_HIGH}. ' \
-                  f'Remote protocol version: {msg.get("PROTOCOL_VERSION_LOW")}-{msg.get("PROTOCOL_VERSION_HIGH")}'
+            message = f'Protocol versions incompatible. ' \
+                      f'This protocol version: {config.PROTOCOL_VERSION_LOW}-{config.PROTOCOL_VERSION_HIGH}. ' \
+                      f'Remote protocol version: {msg.get("PROTOCOL_VERSION_LOW")}-{msg.get("PROTOCOL_VERSION_HIGH")}'
             connection.exec_command_sync(CloseConnectionCommand, 0, message)
             return False
         return True
 
     @staticmethod
     def timeout(msg):
-        # значит всё ок :)
         pass
 
 

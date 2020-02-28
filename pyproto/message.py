@@ -4,26 +4,27 @@ from uuid import uuid4
 
 from .badSituations import NotConnectionException, UnknownCommandRecieved
 from .logger import write_error
-from .tools import tryUuid
+from .tools import try_uuid
 from .flags import MsgFlag, Type, ExecStatus
 
 
 class Message(dict):
-    """Объект серриализация которого "летает" по сети
-    он хранит в себе всю необходимую информаци о пакете который мы хотим отправить по сети
-    Ид
+    """
+    Объект, преобразования которого отправляется по сети.
+    Он хранит в себе всю необходимую информаци о пакете который мы хотим отправить по сети:
+    ID
     Тип
     Команду
     Контент
     Тэги
     Флаги
-    Мин\Макс время жизни
+    Мин/Макс время жизни
     """
     TCP_FIELDS = ['id', 'command', 'flags', 'content', 'PROTOCOL_VERSION_LOW',
                   'PROTOCOL_VERSION_HIGH', 'tags', 'maxTimeLife']
 
     def __str__(self):
-        """Метод для серриализации в строку для записи объекта в логах"""
+        """Метод для преобразования в строку для записи объекта в логах"""
         res = []
 
         # Определимся с типом сообщения
@@ -38,7 +39,8 @@ class Message(dict):
         res.append(f'|Type: {type_name}|')
 
         for field in self:
-            if field in ['command']: continue
+            if field in ['command']:
+                continue
             res.append(f'{field}: {self[field]}')
         return ', '.join(res)
 
@@ -50,16 +52,16 @@ class Message(dict):
     def __init__(self, connection, id_=None, command_uuid=None):
         self.my_worker = connection.worker
         self.my_connection = connection
-        # ид или создаётся, если это инициализация нового сообщения, или задаётся, если это парсинг сообщения из сети
+        # ID или создаётся, если это инициализация нового сообщения, или задаётся, если это парсинг сообщения из сети
         if id_ is not None:
-            if tryUuid(id_):
+            if try_uuid(id_):
                 self['id'] = id_
             else:
-                raise ValueError('Некорректный формат идентификатора пакета')
+                raise ValueError('Invalid packet identifier format')
         else:
             self['id'] = str(uuid4())
 
-        # если при создании передан уид команды, сразу проверим зарегистрирована ли такая команда,
+        # если при создании передан uuid команды, сразу проверим зарегистрирована ли такая команда,
         # и пропишем всю информацию в объекте
         if command_uuid is not None:
             comm_name = self.my_worker.get_command_name(command_uuid)
@@ -67,18 +69,18 @@ class Message(dict):
                 self['command'] = command_uuid
                 self['Command'] = comm_name
             else:
-                raise UnknownCommandRecieved('Неизвестный идентификатор команды')
+                raise UnknownCommandRecieved('Unknown command id')
 
-        # так же месседж не может существовать без флагов, при создании они инициализируются дефолтными значениями
+        # месседж не может существовать без флагов, при создании они инициализируются дефолтными значениями
         self['flags'] = MsgFlag()
 
-    '''Кучка сеттеров и геттеров, для более симпатичного обращения со стороны пользователя'''
-    '''==================================================================================='''
+    # Список сеттеров и геттеров, для более удобного обращения со стороны пользователя
+    # ===================================================================================
     def set_connection(self, conn):
         self.my_connection = conn
 
     def get_answer_copy(self):
-        """из входящего сообщения, создаёт копию, устанавливает тип ответ и статус Succes"""
+        """Из входящего сообщения, создаёт копию, устанавливает тип ответ и статус Success"""
         answer = copy(self)
         answer.set_type(Type.Answer)
         answer.set_status(ExecStatus.Success)
@@ -141,7 +143,7 @@ class Message(dict):
         return self.get('tags')[num]
 
     def set_max_time_life(self, max_time_life):
-        """устанавлдивает время ожидания в секундах"""
+        """Устанавлдивает время ожидания в секундах"""
         self['maxTimeLife'] = max_time_life
 
     def get_max_time_life(self):
@@ -157,32 +159,34 @@ class Message(dict):
             elif f in self:
                 result[f] = self[f]
         return json.dumps(result).encode()
-    '''===========Конец кучки сеттеров и геттеров========================================='''
-    '''==================================================================================='''
+    # Конец списка сеттеров и геттеров
+    # ====================================================================================
 
     def send_answer(self):
-        """В случае если нужно отправить ответ на команду, у нас есть все данные и о воркере и о конеции
+        """
+        В случае если нужно отправить ответ на команду, и у нас есть все данные и о воркере и о конеции
         можно использовать метод send_message от объекта Message
-        В ином случае, нужно отправлять сообщение используя метод Connection::send_message"""
+        В ином случае, нужно отправлять сообщение используя метод Connection::send_message
+        """
         if self.my_connection is None:
             raise NotConnectionException('отсутсвует коннекция, отправка невозможна')
 
         if self.get_type() == Type.Answer:
             self.my_connection.send_message(self)
 
-    '''кучка статических методов для создания наиболее популярных типов месседжов
-    с некими пресетами свойств(флагов, типов, контентов и т.п.'''
+    # список статических методов для создания наиболее популярных типов сообщений
+    # с пресетами свойств(флагов, типов, контентов и т.п.
     @staticmethod
     def command(connection, command_uuid):
-        """Статический метод создания месседжа с типом команды"""
+        """Статический метод создания сообщения с типом команды"""
         msg = Message(connection, command_uuid=command_uuid)
         msg.set_type(Type.Command)
         return msg
 
     @staticmethod
     def answer(connection, command_uuid):
-        """Статический метод создания месседжа с типом ответ"""
+        """Статический метод создания сообщения с типом ответ"""
         msg = Message(connection, command_uuid=command_uuid)
         msg.set_type(Type.Answer)
         return msg
-    '''Конец кучки'''
+    # Конец списка

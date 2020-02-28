@@ -30,11 +30,11 @@ class TcpWorker:
         self.unknown_command_list = []
 
     def _set_disconnection_handler(self, handler):
-        """если пользователь пожилает задать обработчик на разрыв соеднинения то присвоем его значение тут"""
+        """Если пользователь пожелает задать обработчик на разрыв соединения, то присвоим его значение тут"""
         self.disconnection_handler = handler
 
     def _cmd_method_creator(self, connection):
-        """Создаёт у коннекции всевозможнные досупные пользовательские и базовые методы"""
+        """Создаёт у коннекции всевозможные доступные пользовательские и базовые методы"""
         if connection.user_command_recorded:
             return
         connection.user_command_recorded = True
@@ -43,32 +43,32 @@ class TcpWorker:
             setattr(connection, cmd[0] + '_sync', cmd[2].sync_decorator(connection))
             setattr(connection, cmd[0] + '_async', cmd[2].async_decorator(connection))
 
-    def get_command_name(self, commandUuid):
+    def get_command_name(self, command_uuid):
         """По UUID команды получаем Имя команды из списка базовых или из списка пользовательских"""
-        return self.base_commands_list.get_command_name(commandUuid) or \
-               self.user_commands_list.get_command_name(commandUuid)
+        return self.base_commands_list.get_command_name(command_uuid) or \
+               self.user_commands_list.get_command_name(command_uuid)
 
     def command_handler(self, msg):
         if msg.get_command() in self.base_commands_list:
-            """обработки базовых команд"""
+            # Обработчики базовых команд
             command = self.base_commands_list.get_command_impl(msg.get_command())
         else:
-            """обработка пользовательских команд"""
+            # Обработчики пользовательских команд
             command = self.user_commands_list.get_command_impl(msg.get_command())
-        # и теперь закинем обрабатывать это в отдельный поток, чтоб не стопорило получение новых команд
+        # и теперь отправим обрабатывать это в отдельный поток, чтоб не тормозило получение новых команд
         thread = Thread(target=command.handler, args=(msg,))
         thread.daemon = True
         thread.start()
 
     def start_listening(self, connection):
-        """эта команда для конекции запускает бесконечный цикл прослушивания сокета"""
+        """Эта команда для конекции запускает бесконечный цикл прослушивания сокета"""
         thread = Thread(target=self.command_listener, args=(connection,))
         thread.daemon = True
         thread.start()
 
     def command_listener(self, connection: Connection):
-        """метод запускается в отдельном потоке и мониторит входящие пакеты
-        пытается их распарсить и выполнить их соответсвующу обработку"""
+        """Метод запускается в отдельном потоке и мониторит входящие пакеты
+        пытается их распарсить и выполнить их соответствующую обработку"""
         while True:
             json_data = connection.mrecv()
             if json_data:
@@ -96,14 +96,14 @@ class TcpWorker:
                 self.disconnection_handler(connection)
 
     def run_connection(self, connection: Connection):
-        """функция которая выполняет стандартный сценарий, сразу после образования Tcp соединения"""
+        """Функция которая выполняет стандартный сценарий, сразу после образования Tcp соединения"""
         self.connection_pool.add_connection(connection)
         self._cmd_method_creator(connection)
         connection.start()
         self.start_listening(connection)
 
     def finish_all(self, code, description):
-        """функция завершает все соединения предварительно отправив команду CloseConnection"""
+        """Функция завершает все соединения предварительно отправив команду CloseConnection"""
         for conn in self.connection_pool.values():
             perr_name = conn.getpeername()
             conn.exec_command_sync(CloseConnectionCommand, code, description)

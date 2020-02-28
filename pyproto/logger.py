@@ -1,10 +1,8 @@
-"""модуль содержит всю локигу логирования
-
-ЗЫ тут я особо пока вообще не парился"""
-
+"""Модуль содержит локигу логирования"""
 
 import logging
 from .config import MAX_LOG_LENGHT
+
 
 LOG_FILE_NAME = 'app.log'
 
@@ -20,7 +18,8 @@ def set_logging_config(folder='', file_name=LOG_FILE_NAME):
 def msg_handler(decor_func):
     def wrapper(msg):
         msg = msg[:MAX_LOG_LENGHT]
-        print(msg)  # закоментировать тут, чтоб убрать вывод в консоль
+        # Дублирование выводов лога в stdout
+        print(msg)
         decor_func(msg)
     return wrapper
 

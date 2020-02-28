@@ -1,36 +1,35 @@
-"""вспомогательная структура для хранения списка доступных команд"""
+"""Вспомогательная структура для хранения списка доступных команд"""
 from .badSituations import NotImplementedCommand
-from .tools import tryUuid
+from .tools import try_uuid
 
 
 class CommandList(dict):
     @staticmethod
-    def get_command_by_uuid(module, UUID):
-        """из опредлеённого модуля выуживает имя команды по уиду"""
+    def get_command_by_uuid(module, uuid):
+        """Из определённого модуля получает имя команды по UUID"""
         for cls in dir(module):
             obj = getattr(module, cls)
-            if hasattr(obj, 'COMMAND_UUID') and getattr(obj, 'COMMAND_UUID') == UUID:
+            if hasattr(obj, 'COMMAND_UUID') and getattr(obj, 'COMMAND_UUID') == uuid:
                 return obj
-        raise NotImplementedCommand(f'command {UUID} not implemented')
+        raise NotImplementedCommand(f'command {uuid} not implemented')
 
-    def __init__(self, module, moduleImpl):
-        """в конструктор передаётся модуль со списком команд и модуль со списком реализаций"""
+    def __init__(self, module, module_impl):
+        """В конструктор передаётся модуль со списком команд и модуль со списком реализаций"""
         super().__init__(self)
         for field in dir(module):
-            if tryUuid(getattr(module, field)):
+            if try_uuid(getattr(module, field)):
                 uuid = getattr(module, field)
                 # 0 - CommandName
                 # 1 - CommandUUID
                 # 2 - CommandRealisation
-                self[uuid] = (field, uuid, CommandList.get_command_by_uuid(moduleImpl, uuid))
+                self[uuid] = (field, uuid, CommandList.get_command_by_uuid(module_impl, uuid))
 
-    def get_command_impl(self, commandUuid):
-        """по ууид команды получить её реализацию"""
-        return self[commandUuid][2]
+    def get_command_impl(self, command_uuid):
+        """По UUID команды получить её реализацию"""
+        return self[command_uuid][2]
 
-    def get_command_name(self, commandUuid):
+    def get_command_name(self, command_uuid):
         """По UUID команды получаем Имя команды"""
-        if commandUuid in self:
-            return self[commandUuid][0]
+        if command_uuid in self:
+            return self[command_uuid][0]
         return None
-
