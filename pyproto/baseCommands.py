@@ -97,3 +97,9 @@ class BaseCommand:
         def function_template(*args, **kwargs):
             connection.exec_command_async(cls, *args, **kwargs)
         return function_template
+
+    @classmethod
+    def sync_handler_decorator(cls, connection):
+        def function_template():
+            return connection.catch_handler(cls)
+        return function_template

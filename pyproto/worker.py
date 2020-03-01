@@ -42,6 +42,7 @@ class TcpWorker:
             setattr(connection, cmd[0] + '_exec', cmd[2].exec_decorator(connection))
             setattr(connection, cmd[0] + '_sync', cmd[2].sync_decorator(connection))
             setattr(connection, cmd[0] + '_async', cmd[2].async_decorator(connection))
+            setattr(connection, cmd[0] + '_catch', cmd[2].sync_handler_decorator(connection))
 
     def get_command_name(self, command_uuid):
         """По UUID команды получаем Имя команды из списка базовых или из списка пользовательских"""

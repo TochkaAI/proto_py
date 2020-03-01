@@ -301,7 +301,7 @@ class Connection:
             if time.time() > time_of_end:
                 return command.timeout()
 
-            msg = self.message_pool.find_by_command(command.COMMAND_UUID)
+            msg = self.message_pool.find_by_command(command)
             if msg:
                 self.sync_handler_pool.remove_command(command)
                 return command.handler_sync(msg)
