@@ -188,6 +188,9 @@ class Connection:
         msg = Message.command(self, command_uuid)
         return msg
 
+    def start_catching_command(self, command: baseCommands.BaseCommand):
+        self.sync_handler_pool.add_command(command)
+
     def send_message(self, message, need_answer=False):
         """
         Метод отправки сущности сообщение, во-первых, этот метод следит за тем чтобы отправляемой команды не было в

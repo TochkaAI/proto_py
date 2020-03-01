@@ -83,7 +83,8 @@ class TcpWorker:
                     write_info(f'[{connection.getpeername()}] Msg  received: {msg}')
 
                     # Это ответы, которые нужно обработать, в синхронном или асинхронном режиме
-                    if msg.get_id() in connection.request_pool or msg.get_command() in connection.sync_handler_pool:
+                    if msg.get_id() in connection.request_pool or \
+                            connection.sync_handler_pool.is_catching(msg.get_command()):
                         connection.message_pool.add_message(msg)
                     # Это команда с той стороны, её нужно передать в соответсвующий handler
                     else:
