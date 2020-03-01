@@ -4,11 +4,12 @@ import time
 import uuid
 from threading import Thread
 
-from . import baseCommands, config
+from . import baseCommands, config, BaseCommand
 from .config import RECONNECT_TIME_WAIT
 from .const import JSON_PROTOCOL_FORMAT
 from .flags import MsgFlag
 from .message import Message
+from .handlerPool import HandlerPool
 from .messagePool import MessagePool
 from .logger import write_info
 
@@ -33,6 +34,8 @@ class Connection:
         self.message_pool = MessagePool()
         # это запросы которые мы отправляли, и хотим дождаться ответа
         self.request_pool = MessagePool()
+        # это список команд, который мы ожидаем принять, для синхронной обработки
+        self.sync_handler_pool = HandlerPool()
 
         # это воркер в рамках которого была создана конекция
         self.worker = worker  # Type: TcpWorker
@@ -248,7 +251,7 @@ class Connection:
 
                 return command.answer(ans_msg)
 
-            # TODO тут можно переделать, первую секунду ждём, часто, а потом медленее и медленее
+            # TODO переделать, первую секунду ждём, часто, а потом медленее и медленее
             time.sleep(0.2)
 
     def exec_command_async(self, command, *args, **kwargs):
@@ -288,3 +291,19 @@ class Connection:
         listener_thread = Thread(target=answer_handler)
         listener_thread.daemon = True
         listener_thread.start()
+
+    def catch_handler(self, command):
+        self.sync_handler_pool.add_command(command)
+
+        time_of_start = time.time()
+        time_of_end = time_of_start + config.MAX_TIMEOUT_SEC
+        while True:
+            if time.time() > time_of_end:
+                return command.timeout()
+
+            msg = self.message_pool.find_by_command(command.COMMAND_UUID)
+            if msg:
+                self.sync_handler_pool.remove_command(command)
+                return command.handler_sync(msg)
+
+            time.sleep(0.5)

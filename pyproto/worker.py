@@ -80,12 +80,13 @@ class TcpWorker:
                     connection.exec_command(UnknownCommand, json_data)
                 else:
                     write_info(f'[{connection.getpeername()}] Msg  received: {msg}')
-                    # Это команда с той стороны, её нужно прям тут и обработать!
-                    if msg.get_id() not in connection.request_pool:
-                        self.command_handler(msg)
-                    # Это ответы, который нужно обработать
-                    else:
+
+                    # Это ответы, которые нужно обработать, в синхронном или асинхронном режиме
+                    if msg.get_id() in connection.request_pool or msg.get_command() in connection.sync_handler_pool:
                         connection.message_pool.add_message(msg)
+                    # Это команда с той стороны, её нужно передать в соответсвующий handler
+                    else:
+                        self.command_handler(msg)
             else:
                 break
         # соответственно если я тут, значит у нас произошёл разрыв соединения

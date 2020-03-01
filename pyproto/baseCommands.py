@@ -34,6 +34,7 @@ class BaseCommand:
     Пример реализации расположен в файле baseCommandsImpl, где с помощью этого класса реализованы
     базовые команды протокола
     """
+    COMMAND_UUID = None
     @staticmethod
     def initial(connection, *args, **kwargs):
         """
