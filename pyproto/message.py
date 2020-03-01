@@ -69,7 +69,7 @@ class Message(dict):
                 self['command'] = command_uuid
                 self['Command'] = comm_name
             else:
-                raise UnknownCommandRecieved('Unknown command id')
+                raise UnknownCommandRecieved(f'Unknown command uuid {command_uuid}')
 
         # месседж не может существовать без флагов, при создании они инициализируются дефолтными значениями
         self['flags'] = MsgFlag()

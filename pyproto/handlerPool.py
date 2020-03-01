@@ -1,4 +1,4 @@
-from pyproto import BaseCommand
+from .baseCommands import BaseCommand
 
 
 class HandlerPool(list):

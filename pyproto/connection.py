@@ -4,7 +4,7 @@ import time
 import uuid
 from threading import Thread
 
-from . import baseCommands, config, BaseCommand
+from . import baseCommands, config
 from .config import RECONNECT_TIME_WAIT
 from .const import JSON_PROTOCOL_FORMAT
 from .flags import MsgFlag

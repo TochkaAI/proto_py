@@ -1,5 +1,5 @@
 """Вспомогательный класс, для хранения списка входящих или исходящих сообщений, для дальнейшей обработки хендлерами"""
-from . import BaseCommand
+from .baseCommands import BaseCommand
 from .message import Message
 
 

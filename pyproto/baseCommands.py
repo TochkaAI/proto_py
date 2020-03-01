@@ -61,6 +61,10 @@ class BaseCommand:
         raise Exception('Message processing method not implemented yet')
 
     @staticmethod
+    def handler_sync(msg: Message):
+        raise Exception('Message sync handler is not implemented')
+
+    @staticmethod
     def unknown(msg: Message):
         """
         Обработчик ситуации, при которой в ответ на команду приходит сообщение о том, что данная команда неизвестна
