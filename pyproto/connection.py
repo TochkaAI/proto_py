@@ -11,7 +11,7 @@ from .flags import MsgFlag
 from .message import Message
 from .handlerPool import HandlerPool
 from .messagePool import MessagePool
-from .logger import write_info
+from .logger import logger
 
 
 class Connection:
@@ -74,7 +74,7 @@ class Connection:
         try:
             self.socket.connect(*args, **kwargs)
         except ConnectionRefusedError:
-            write_info('Не удалось, установить соединение, удалённый сервер не доступен')
+            logger.info('Не удалось, установить соединение, удалённый сервер не доступен')
             self.__is_active = False
             return False
 
@@ -146,7 +146,7 @@ class Connection:
 
         def reconnecting_loop():
             while True:
-                write_info(f'[{self.getpeername()}] Попытка переподключения')
+                logger.info(f'[{self.getpeername()}] Попытка переподключения')
                 if self.connect((ip, port)):
                     self.__is_active = True
                     self.worker.run_connection(self)
@@ -201,12 +201,13 @@ class Connection:
         если ответ не нужен, то сообщение в пул не добавляется
         """
         if message.get_command() in self.worker.unknown_command_list:
-            write_info(f'[{message.my_connection.getpeername()}] Попытка оптравки неизвестной команды!')
+            logger.info(f'[{message.my_connection.getpeername()}] Попытка оптравки неизвестной команды!')
             return
 
         message.set_connection(self)
         self.msend(message.get_bytes())
-        write_info(f'[{self.getpeername()}] Msg JSON send: {message.get_bytes().decode()}')
+        # write_info(f'[{self.getpeername()}] Msg JSON send: {message.get_bytes().decode()}')
+        logger.info(f'[{self.getpeername()}] Msg send: {self.message_from_json(message.get_bytes().decode())}')
         if need_answer:
             self.request_pool.add_message(message)
 

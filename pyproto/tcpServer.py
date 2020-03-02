@@ -3,7 +3,7 @@ from threading import Thread
 
 from .worker import TcpWorker
 from .connection import Connection
-from .logger import write_info
+from .logger import logger
 
 
 class TcpServer(TcpWorker):
@@ -18,7 +18,7 @@ class TcpServer(TcpWorker):
         while True:
             sock, adr = self.serv_socket.accept()
             connection = Connection(self, sock)
-            write_info(f'{connection.getpeername()} - was connected')
+            logger.info(f'{connection.getpeername()} - was connected')
             self.run_connection(connection)
 
             if new_client_handler:

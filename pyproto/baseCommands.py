@@ -4,8 +4,8 @@
 import sys
 
 from .message import Message
-from .logger import write_info
-
+from .logger import logger
+# import logging
 
 Unknown = "UNKNOWN"
 Error = "ERROR"
@@ -69,7 +69,7 @@ class BaseCommand:
         """
         Обработчик ситуации, при которой в ответ на команду приходит сообщение о том, что данная команда неизвестна
         """
-        write_info(f'[{msg.my_connection.getpeername()}] Unknown command for remote client! {msg.get_id()}')
+        logger.info(f'[{msg.my_connection.getpeername()}] Unknown command for remote client! {msg.get_id()}')
         # raise Exception('Команда неизвестна для удалённого клиента!')
 
     @staticmethod

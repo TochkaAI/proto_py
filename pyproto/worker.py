@@ -3,7 +3,7 @@ from threading import Thread
 from .badSituations import UnknownCommandRecieved
 from .commandList import CommandList
 from .connection import Connection
-from .logger import write_info, set_logging_config
+from .logger import logger
 from . import baseCommands
 from . import baseCommandsImpl
 from .baseCommandsImpl import CloseConnectionCommand, UnknownCommand
@@ -16,8 +16,6 @@ class TcpWorker:
     base_commands_list: CommandList
 
     def __init__(self, ip, port, client_commands, client_command_impl):
-        set_logging_config()
-
         self.ip = ip
         self.port = port
 
@@ -46,8 +44,8 @@ class TcpWorker:
 
     def get_command_name(self, command_uuid):
         """По UUID команды получаем Имя команды из списка базовых или из списка пользовательских"""
-        return self.base_commands_list.get_command_name(command_uuid) or \
-               self.user_commands_list.get_command_name(command_uuid)
+        return (self.base_commands_list.get_command_name(command_uuid) or
+                self.user_commands_list.get_command_name(command_uuid))
 
     def command_handler(self, msg):
         if msg.get_command() in self.base_commands_list:
@@ -73,15 +71,14 @@ class TcpWorker:
         while True:
             json_data = connection.mrecv()
             if json_data:
-                write_info(f'[{connection.getpeername()}] JSON received: {json_data}')
+                # logger.info(f'[{connection.getpeername()}] JSON received: {json_data}')
                 try:
                     msg = connection.message_from_json(json_data)  # Type: Message
                 except UnknownCommandRecieved:
-                    write_info(f'[{connection.getpeername()}] Unknown msg received')
+                    logger.info(f'[{connection.getpeername()}] Unknown msg received')
                     connection.exec_command(UnknownCommand, json_data)
                 else:
-                    write_info(f'[{connection.getpeername()}] Msg  received: {msg}')
-
+                    logger.info(f'[{connection.getpeername()}] Msg  received: {msg}')
                     # Это ответы, которые нужно обработать, в синхронном или асинхронном режиме
                     if msg.get_id() in connection.request_pool or \
                             connection.sync_handler_pool.is_catching(msg.get_command()):
@@ -111,4 +108,4 @@ class TcpWorker:
             perr_name = conn.getpeername()
             conn.exec_command_sync(CloseConnectionCommand, code, description)
             conn.close()
-            write_info(f'[{perr_name}] Disconect from host')
+            logger.info(f'[{perr_name}] Disconect from host')
