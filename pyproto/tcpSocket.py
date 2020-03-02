@@ -1,6 +1,6 @@
 from .connection import Connection
 from .worker import TcpWorker
-from .logger import write_info
+from .logger import logger
 
 
 class TcpSocket(TcpWorker):
@@ -16,10 +16,10 @@ class TcpSocket(TcpWorker):
                 return None
             self.run_connection(connection)
         except TimeoutError as te:
-            write_info(str(te))
+            logger.info(str(te))
             return None
         except TypeError as type_e:
-            write_info(str(type_e))
+            logger.info(str(type_e))
             return None
 
         if disconect_connection_handler:

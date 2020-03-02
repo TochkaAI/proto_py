@@ -3,7 +3,7 @@ from copy import copy
 from uuid import uuid4
 
 from .badSituations import NotConnectionException, UnknownCommandRecieved
-from .logger import write_error
+from .logger import logger
 from .tools import try_uuid
 from .flags import MsgFlag, Type, ExecStatus
 
@@ -134,7 +134,7 @@ class Message(dict):
 
     def tag(self, num=0):
         if num not in range(0, 254):
-            write_error("Index value not in range [0..254]")
+            logger.error("Index value not in range [0..254]")
             return 0
 
         if 'tags' not in self or len(self.get('tags')) < num + 1:
