@@ -1,4 +1,5 @@
 """Вспомогательный класс, для хранения списка входящих или исходящих сообщений, для дальнейшей обработки хендлерами"""
+from .baseCommands import BaseCommand
 from .message import Message
 
 
@@ -17,3 +18,9 @@ class MessagePool(dict):
 
     def get_message(self, message_id) -> Message:
         return self.get(message_id)
+
+    def find_by_command(self, command: BaseCommand):
+        for msg in self.values():
+            if msg.get_command() == command.COMMAND_UUID:
+                return msg
+        return None

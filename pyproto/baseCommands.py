@@ -34,6 +34,7 @@ class BaseCommand:
     Пример реализации расположен в файле baseCommandsImpl, где с помощью этого класса реализованы
     базовые команды протокола
     """
+    COMMAND_UUID = None
     @staticmethod
     def initial(connection, *args, **kwargs):
         """
@@ -58,6 +59,10 @@ class BaseCommand:
         Так же как и в обработчике answer сюда можно попасть с типом и Command и Answer
         """
         raise Exception('Message processing method not implemented yet')
+
+    @staticmethod
+    def handler_sync(msg: Message):
+        raise Exception('Message sync handler is not implemented')
 
     @staticmethod
     def unknown(msg: Message):
@@ -91,4 +96,10 @@ class BaseCommand:
     def async_decorator(cls, connection):
         def function_template(*args, **kwargs):
             connection.exec_command_async(cls, *args, **kwargs)
+        return function_template
+
+    @classmethod
+    def sync_handler_decorator(cls, connection):
+        def function_template():
+            return connection.catch_handler(cls)
         return function_template

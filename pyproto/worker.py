@@ -40,6 +40,7 @@ class TcpWorker:
             setattr(connection, cmd[0] + '_exec', cmd[2].exec_decorator(connection))
             setattr(connection, cmd[0] + '_sync', cmd[2].sync_decorator(connection))
             setattr(connection, cmd[0] + '_async', cmd[2].async_decorator(connection))
+            setattr(connection, cmd[0] + '_catch', cmd[2].sync_handler_decorator(connection))
 
     def get_command_name(self, command_uuid):
         """По UUID команды получаем Имя команды из списка базовых или из списка пользовательских"""
@@ -78,12 +79,13 @@ class TcpWorker:
                     connection.exec_command(UnknownCommand, json_data)
                 else:
                     logger.info(f'[{connection.getpeername()}] Msg  received: {msg}')
-                    # Это команда с той стороны, её нужно прям тут и обработать!
-                    if msg.get_id() not in connection.request_pool:
-                        self.command_handler(msg)
-                    # Это ответы, который нужно обработать
-                    else:
+                    # Это ответы, которые нужно обработать, в синхронном или асинхронном режиме
+                    if msg.get_id() in connection.request_pool or \
+                            connection.sync_handler_pool.is_catching(msg.get_command()):
                         connection.message_pool.add_message(msg)
+                    # Это команда с той стороны, её нужно передать в соответсвующий handler
+                    else:
+                        self.command_handler(msg)
             else:
                 break
         # соответственно если я тут, значит у нас произошёл разрыв соединения
