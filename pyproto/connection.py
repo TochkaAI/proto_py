@@ -218,8 +218,6 @@ class Connection:
         Является обёрткой над методом send_message, не подразумевает получение ответа
         """
         msg = command.initial(self, *args, **kwargs)
-        # Шлем сообщение только если его вернул command.initial
-        # if msg is not None:
         self.send_message(msg, need_answer=False)
 
     def exec_command_sync(self, command, *args, **kwargs):
@@ -228,8 +226,6 @@ class Connection:
         отправка сущности "команда", с последующей обработкой ответа в синхронном режиме
         """
         msg = command.initial(self, *args, **kwargs)
-        # Шлем сообщение только если его вернул command.initial
-        # if not msg is None:
         self.send_message(msg, need_answer=True)
 
         time_of_start = time.time()
