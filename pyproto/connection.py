@@ -73,8 +73,13 @@ class Connection:
         """Обёртка для работы с сокетом спрятанным внутри своего класса"""
         try:
             self.socket.connect(*args, **kwargs)
-        except ConnectionRefusedError:
-            logger.info('Не удалось, установить соединение, удалённый сервер не доступен')
+        except ConnectionRefusedError as err:
+            logger.info(f'Не удалось, установить соединение, удалённый сервер не доступен {str(err)}')
+            self.__is_active = False
+            return False
+        except OSError as err:
+            logger.info(f'Не удалось, установить соединение, удалённый сервер не доступен {str(err)}')
+            self.socket = socket.socket()
             self.__is_active = False
             return False
 
@@ -86,7 +91,16 @@ class Connection:
     def close(self):
         """Обёртка для работы с сокетом спрятанным внутри своего класса"""
         self.__is_active = False
-        self.socket.shutdown(socket.SHUT_RDWR)
+        try:
+            # Сокет мог быть принудительно убит с другой стороны.
+            self.socket.shutdown(socket.SHUT_RDWR)
+        except Exception:
+            # Тогда делать ничего не нужно, просто закрыть его
+            pass
+
+        if self.worker.disconnection_handler is not None:
+            self.worker.disconnection_handler(self)
+
         return self.socket.close()
 
     def fileno(self):
@@ -146,7 +160,8 @@ class Connection:
 
         def reconnecting_loop():
             while True:
-                logger.info(f'[{self.getpeername()}] Попытка переподключения')
+                time.sleep(wait_time)
+                logger.info(f'[{self.getpeername()}] Попытка переподключения к {ip}:{port}')
                 if self.connect((ip, port)):
                     self.__is_active = True
                     self.worker.run_connection(self)
@@ -154,7 +169,6 @@ class Connection:
                     if connection_restored_handler:
                         connection_restored_handler(self)
                     return
-                time.sleep(wait_time)
 
         reconnecting_thread = Thread(target=reconnecting_loop)
         reconnecting_thread.daemon = True

@@ -27,7 +27,7 @@ class TcpWorker:
 
         self.unknown_command_list = []
 
-    def _set_disconnection_handler(self, handler):
+    def set_disconnection_handler(self, handler):
         """Если пользователь пожелает задать обработчик на разрыв соединения, то присвоим его значение тут"""
         self.disconnection_handler = handler
 
@@ -92,8 +92,6 @@ class TcpWorker:
         self.connection_pool.del_connection(connection)
         if connection.is_connected():  # тут нужна проверка, потому что мы сами могли порвать соединение
             connection.close()
-            if self.disconnection_handler is not None:
-                self.disconnection_handler(connection)
 
     def run_connection(self, connection: Connection):
         """Функция которая выполняет стандартный сценарий, сразу после образования Tcp соединения"""
@@ -104,8 +102,8 @@ class TcpWorker:
 
     def finish_all(self, code, description):
         """Функция завершает все соединения предварительно отправив команду CloseConnection"""
-        for conn in self.connection_pool.values():
-            perr_name = conn.getpeername()
+        for conn in list(self.connection_pool.values()):
+            peer_name = conn.getpeername()
             conn.exec_command_sync(CloseConnectionCommand, code, description)
             conn.close()
-            logger.info(f'[{perr_name}] Disconect from host')
+            logger.info(f'[{peer_name}] Disconect from host')
