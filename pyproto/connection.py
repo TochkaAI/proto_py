@@ -219,11 +219,10 @@ class Connection:
             return
 
         message.set_connection(self)
-        self.msend(message.get_bytes())
-        # write_info(f'[{self.getpeername()}] Msg JSON send: {message.get_bytes().decode()}')
-        logger.info(f'[{self.getpeername()}] Msg send: {self.message_from_json(message.get_bytes().decode())}')
         if need_answer:
             self.request_pool.add_message(message)
+        self.msend(message.get_bytes())
+        logger.info(f'[{self.getpeername()}] Msg send: {self.message_from_json(message.get_bytes().decode())}')
 
     def max_time_life_prolongation(self, message_id, command_id, sec_to_add):
         msg = self.request_pool.get_message(message_id)
