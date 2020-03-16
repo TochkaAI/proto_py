@@ -197,9 +197,9 @@ class Connection:
 
         return msg
 
-    def create_command(self, command_uuid) -> Message:
+    def create_command(self, command: baseCommands.BaseCommand) -> Message:
         """Метод просто создаёт Message с типом Команда и заданным UUID команды"""
-        msg = Message.command(self, command_uuid)
+        msg = Message.command(self, command.COMMAND_UUID)
         return msg
 
     def start_catching_command(self, command: baseCommands.BaseCommand):

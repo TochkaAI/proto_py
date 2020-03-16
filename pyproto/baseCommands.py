@@ -13,11 +13,6 @@ ProtocolCompatible = "PROTOCOL_COMPATIBLE"
 CloseConnection = "CLOSE_CONNECTION"
 
 
-# Функция регистрирует внутри модуля переменные с именем описанным выше,
-# для удобного пользования в дальнейшем
-# def REGISTRY_COMMAND(name, uuid):
-#     setattr(sys.modules[__name__], name, uuid)
-
 class REGISTRY_COMMAND:
     commands_names = []
     commands_uuids = []

@@ -6,15 +6,15 @@ from .message import Message
 
 
 class Error(BaseCommand):
-    COMMAND_UUID = ERROR
+    COMMAND_UUID = ERROR.uuid
 
 
 class CloseConnectionCommand(BaseCommand):
-    COMMAND_UUID = CLOSE_CONNECTION
+    COMMAND_UUID = CLOSE_CONNECTION.uuid
 
     @staticmethod
     def initial(conn, code, desc):
-        msg = conn.create_command(CLOSE_CONNECTION)
+        msg = conn.create_command(CloseConnectionCommand)
         msg.set_content({"code": code, "description": desc})
         return msg
 
@@ -33,11 +33,11 @@ class CloseConnectionCommand(BaseCommand):
 
 
 class ProtocolCompatibleCommand(BaseCommand):
-    COMMAND_UUID = PROTOCOL_COMPATIBLE
+    COMMAND_UUID = PROTOCOL_COMPATIBLE.uuid
 
     @staticmethod
     def initial(conn):
-        msg = conn.create_command(PROTOCOL_COMPATIBLE)
+        msg = conn.create_command(ProtocolCompatibleCommand)
         msg.set_protocol_version_high(config.PROTOCOL_VERSION_LOW)
         msg.set_protocol_version_low(config.PROTOCOL_VERSION_HIGH)
         msg.set_max_time_life(5)
@@ -78,12 +78,12 @@ class ProtocolCompatibleCommand(BaseCommand):
 
 
 class UnknownCommand(BaseCommand):
-    COMMAND_UUID = UNKNOWN
+    COMMAND_UUID = UNKNOWN.uuid
 
     @staticmethod
     def initial(conn, unknown_answer):
         unkwonw_data = json.loads(unknown_answer)
-        msg = conn.create_command(UNKNOWN)
+        msg = conn.create_command(UnknownCommand)
         content = {
             'commandId': unkwonw_data['command'],
             'socketType': 2,
