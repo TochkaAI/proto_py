@@ -5,7 +5,7 @@ import sys
 
 from .message import Message
 from .logger import logger
-# import logging
+
 
 Unknown = "UNKNOWN"
 Error = "ERROR"
@@ -15,15 +15,29 @@ CloseConnection = "CLOSE_CONNECTION"
 
 # Функция регистрирует внутри модуля переменные с именем описанным выше,
 # для удобного пользования в дальнейшем
-def REGISTRY_COMMAND(name, uuid):
-    setattr(sys.modules[__name__], name, uuid)
+# def REGISTRY_COMMAND(name, uuid):
+#     setattr(sys.modules[__name__], name, uuid)
+
+class REGISTRY_COMMAND:
+    commands_names = []
+    commands_uuids = []
+
+    def __init__(self, name, uuid):
+        self.name = name
+        self.uuid = uuid
+        if name in REGISTRY_COMMAND.commands_names:
+            raise ValueError(f'Command name {name} is not unique')
+        if uuid in REGISTRY_COMMAND.commands_uuids:
+            raise ValueError(f'Command uuid {uuid} is not unique')
+        REGISTRY_COMMAND.commands_names.append(name)
+        REGISTRY_COMMAND.commands_uuids.append(uuid)
 
 
 # Регистрация базовых команд
-REGISTRY_COMMAND(Unknown,            "4aef29d6-5b1a-4323-8655-ef0d4f1bb79d")
-REGISTRY_COMMAND(Error,              "b18b98cc-b026-4bfe-8e33-e7afebfbe78b")
-REGISTRY_COMMAND(ProtocolCompatible, "173cbbeb-1d81-4e01-bf3c-5d06f9c878c3")
-REGISTRY_COMMAND(CloseConnection,    "e71921fd-e5b3-4f9b-8be7-283e8bb2a531")
+UNKNOWN =             REGISTRY_COMMAND(Unknown,            "4aef29d6-5b1a-4323-8655-ef0d4f1bb79d")
+ERROR =               REGISTRY_COMMAND(Error,              "b18b98cc-b026-4bfe-8e33-e7afebfbe78b")
+PROTOCOL_COMPATIBLE = REGISTRY_COMMAND(ProtocolCompatible, "173cbbeb-1d81-4e01-bf3c-5d06f9c878c3")
+CLOSE_CONNECTION =    REGISTRY_COMMAND(CloseConnection,    "e71921fd-e5b3-4f9b-8be7-283e8bb2a531")
 
 
 class BaseCommand:
@@ -35,6 +49,7 @@ class BaseCommand:
     базовые команды протокола
     """
     COMMAND_UUID = None
+
     @staticmethod
     def initial(connection, *args, **kwargs):
         """
