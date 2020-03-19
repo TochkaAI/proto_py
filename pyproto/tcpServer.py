@@ -1,7 +1,7 @@
 import socket
 from threading import Thread
 
-from .worker import TcpWorker
+from .tcpWorker import TcpWorker
 from .connection import Connection
 from .logger import logger
 
@@ -33,7 +33,7 @@ class TcpServer(TcpWorker):
         thread.daemon = True
         thread.start()
 
-        self._set_disconnection_handler(disconect_connection_handler)
+        self.set_disconnection_handler(disconect_connection_handler)
 
     def stop(self):
         self.finish_all(0, 'Good bye!')

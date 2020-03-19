@@ -1,6 +1,6 @@
 """Вспомогательная структура для хранения списка доступных команд"""
+from . import baseCommands
 from .badSituations import NotImplementedCommand
-from .tools import try_uuid
 
 
 class CommandList(dict):
@@ -17,12 +17,13 @@ class CommandList(dict):
         """В конструктор передаётся модуль со списком команд и модуль со списком реализаций"""
         super().__init__(self)
         for field in dir(module):
-            if try_uuid(getattr(module, field)):
-                uuid = getattr(module, field)
+            obj = getattr(module, field)
+            if isinstance(obj, baseCommands.REGISTRY_COMMAND):
+                uuid = obj.uuid
                 # 0 - CommandName
                 # 1 - CommandUUID
                 # 2 - CommandRealisation
-                self[uuid] = (field, uuid, CommandList.get_command_by_uuid(module_impl, uuid))
+                self[uuid] = (obj.name, uuid, CommandList.get_command_by_uuid(module_impl, uuid))
 
     def get_command_impl(self, command_uuid):
         """По UUID команды получить её реализацию"""
