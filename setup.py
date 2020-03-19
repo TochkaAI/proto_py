@@ -5,10 +5,10 @@ from setuptools import setup, find_packages
 #     long_description = fh.read()
 
 setup(
-    name="pyproto",
-    version="0.0.4",
-    description="package with pyproto for PointOfView",
-    url="https://github.com/TochkaAI/pyproto",
+    name="proto_py",
+    version="1.0.0",
+    description="package with proto_py for PointOfView",
+    url="https://github.com/TochkaAI/proto_py",
     packages=find_packages(),
     python_requires='>=3.6',
     classifiers=[

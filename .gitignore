@@ -1,4 +1,13 @@
-.DS_Store
+.DS_Store1
+Revert "Merge branch 'refactoring/REGISTRY_COMMAND'"
+
+This reverts commit 0402df307b6b988cf446013e24c39473528c42d6, reversing
+changes made to 4a1c02a2651525118f8ee7bcf2f1ccb8cd32cc6f.
+
+# Conflicts:
+#	build/lib/proto_py/tcpWorker.py
+#	build/lib/proto_py/worker.py
+#	pyproto/tcpWorker.py
 
 **/.DS_Store
 
@@ -17,4 +26,8 @@ __pycache__/
 
 **/*.pyc
 
-pyproto.egg-info/
+proto_py.egg-info/
+
+build/
+
+dist/
