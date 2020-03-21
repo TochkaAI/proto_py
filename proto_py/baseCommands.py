@@ -1,8 +1,7 @@
 """
 Список констант с базовыми командами
 """
-import sys
-
+from .badSituations import MessageStatusFailed, MessageStatusError
 from .message import Message
 from .logger import logger
 
@@ -60,6 +59,20 @@ class BaseCommand:
         Сюда мы можем попасть с сообщение типа Command и Answer
         """
         pass
+
+    @staticmethod
+    def answer_fail(msg: Message):
+        """
+        Метод обработчик ответа на команду, вызывается в том случает когда отет приходит со статусом ExecStatus.Failed
+        """
+        raise MessageStatusFailed(msg, f"Command {msg.get_id()} was failed")
+
+    @staticmethod
+    def answer_error(msg: Message):
+        """
+        Метод обработчик ответа на команду, вызывается в том случает когда отет приходит со статусом ExecStatus.Failed
+        """
+        raise MessageStatusError(msg, f"Command {msg.get_id()} was error")
 
     @staticmethod
     def handler(msg: Message):

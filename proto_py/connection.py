@@ -7,7 +7,7 @@ from threading import Thread
 from . import baseCommands, config
 from .config import RECONNECT_TIME_WAIT
 from .const import JSON_PROTOCOL_FORMAT
-from .flags import MsgFlag
+from .flags import MsgFlag, ExecStatus
 from .message import Message
 from .handlerPool import HandlerPool
 from .messagePool import MessagePool
@@ -266,7 +266,12 @@ class Connection:
                 if ans_msg.get_command() == baseCommands.UNKNOWN:
                     return command.unknown(msg)
 
-                return command.answer(ans_msg)
+                if ans_msg.get_status() == ExecStatus.Success:
+                    return command.answer(ans_msg)
+                elif ans_msg.get_status() == ExecStatus.Failed:
+                    return command.answer_fail(ans_msg)
+                elif ans_msg.get_status() == ExecStatus.Error:
+                    return command.answer_error(ans_msg)
 
             # TODO переделать, первую секунду ждём, часто, а потом медленее и медленее
             time.sleep(0.2)

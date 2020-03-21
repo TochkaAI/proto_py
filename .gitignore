@@ -7,7 +7,7 @@ changes made to 4a1c02a2651525118f8ee7bcf2f1ccb8cd32cc6f.
 # Conflicts:
 #	build/lib/proto_py/tcpWorker.py
 #	build/lib/proto_py/worker.py
-#	pyproto/tcpWorker.py
+#	proto_py/tcpWorker.py
 
 **/.DS_Store
 
