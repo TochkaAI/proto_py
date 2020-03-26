@@ -95,9 +95,9 @@ class TcpWorker:
 
     def run_connection(self, connection: Connection):
         """Функция которая выполняет стандартный сценарий, сразу после образования Tcp соединения"""
-        self.connection_pool.add_connection(connection)
         self._cmd_method_creator(connection)
         connection.start()
+        self.connection_pool.add_connection(connection)
         self.start_listening(connection)
 
     def finish_all(self, code, description):

@@ -42,11 +42,8 @@ class TcpSocket(TcpWorker):
             if not connection.connect((self.ip, self.port)):
                 return None
             self.run_connection(connection)
-        except TimeoutError as te:
-            logger.info(str(te))
-            return None
-        except TypeError as type_e:
-            logger.info(str(type_e))
+        except (TimeoutError, TypeError) as ex:
+            logger.info(str(ex))
             return None
 
         if self.connection_handler:
