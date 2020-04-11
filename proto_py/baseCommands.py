@@ -101,7 +101,7 @@ class BaseCommand:
         Если в сообщении задать максимальное время выполнения команды,
         в случае истечения времени сработает этот обработчик
         """
-        raise Exception('Waiting command execution timed out')
+        raise TimeoutError('Waiting command execution timed out')
 
     @classmethod
     def exec_decorator(cls, connection):
