@@ -74,11 +74,13 @@ class Connection:
         try:
             self.socket.connect(*args, **kwargs)
         except ConnectionRefusedError as err:
-            logger.info(f'Не удалось, установить соединение, удалённый сервер не доступен {str(err)}')
+            logger.info(f'Не удалось, установить соединение,'
+                        f' удалённый сервер {self.worker.ip}:{self.worker.port} не доступен {str(err)}')
             self.__is_active = False
             return False
         except OSError as err:
-            logger.info(f'Не удалось, установить соединение, удалённый сервер не доступен {str(err)}')
+            logger.info(f'Не удалось, установить соединение,'
+                        f' удалённый сервер {self.worker.ip}:{self.worker.port} не доступен {str(err)}')
             self.socket = socket.socket()
             self.__is_active = False
             return False
@@ -184,7 +186,7 @@ class Connection:
         answer = self.recv(16, timeout=3)
         logger.info(f'Send hello: answer: {answer} b_data: {b_data}')
         if answer != b_data:
-            raise TypeError('Удалённый сервер не согласовал тип протокола')
+            raise TypeError(f'Удалённый сервер {self.worker.ip}:{self.worker.port} не согласовал тип протокола')
 
     def message_from_json(self, string_msg):
         """Метод разбора сообщения из json-строки приходящей из сети"""
