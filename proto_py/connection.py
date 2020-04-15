@@ -184,7 +184,7 @@ class Connection:
         b_data = uuid.UUID(JSON_PROTOCOL_FORMAT).bytes
         self.send(b_data)
         answer = self.recv(16, timeout=3)
-        logger.info(f'Send hello: answer: {answer} b_data: {b_data}')
+        logger.info(f'Send hello: answer: {uuid.UUID(bytes=answer)} b_data: {uuid.UUID(bytes=b_data)}')
         if answer != b_data:
             raise TypeError(f'Удалённый сервер {self.worker.ip}:{self.worker.port} не согласовал тип протокола')
 
