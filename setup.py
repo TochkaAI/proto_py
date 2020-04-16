@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="proto_py",
-    version="1.1.0",
+    version="1.1.1",
     description="package with proto_py for PointOfView",
     url="https://github.com/TochkaAI/proto_py",
     packages=find_packages(),

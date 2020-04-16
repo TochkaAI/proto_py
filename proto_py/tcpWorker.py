@@ -71,7 +71,7 @@ class TcpWorker:
         while True:
             json_data = connection.mrecv()
             if json_data:
-                # logger.info(f'[{connection.getpeername()}] JSON received: {json_data}')
+                logger.info(f'[{connection.getpeername()}] JSON received: {json_data}')
                 try:
                     msg = connection.message_from_json(json_data)  # Type: Message
                 except UnknownCommandRecieved:
