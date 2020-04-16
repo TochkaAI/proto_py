@@ -15,7 +15,7 @@ class CloseConnectionCommand(BaseCommand):
     @staticmethod
     def initial(conn, code, desc):
         msg = conn.create_command(CloseConnectionCommand)
-        msg.set_content({"code": code, "description": desc})
+        msg.set_content({'code': code, 'description': desc})
         return msg
 
     @staticmethod

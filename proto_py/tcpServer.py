@@ -7,8 +7,10 @@ from .logger import logger
 
 
 class TcpServer(TcpWorker):
-    """Сущность, которая выступает в роли слушателя
-    к ней можно подключится образовав тем самым конекцию, для дальнейшего обмена сообщениями"""
+    """
+    Сущность, которая выступает в роли слушателя
+    к ней можно подключится образовав тем самым конекцию, для дальнейшего обмена сообщениями
+    """
     def __init__(self, ip, port, client_commands, client_command_impl):
         super().__init__(ip, port, client_commands, client_command_impl)
 

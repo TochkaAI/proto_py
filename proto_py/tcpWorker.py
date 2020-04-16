@@ -11,7 +11,9 @@ from .connectionPool import ConnectionPool
 
 
 class TcpWorker:
-    """Главная сущность осуществляющая основную логику общения между клиентами в рамках оговоренного протокола"""
+    """
+    Главная сущность осуществляющая основную логику общения между клиентами в рамках оговоренного протокола
+    """
     user_commands_list: CommandList
     base_commands_list: CommandList
 

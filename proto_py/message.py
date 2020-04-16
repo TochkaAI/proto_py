@@ -134,7 +134,7 @@ class Message(dict):
 
     def tag(self, num=0):
         if num not in range(0, 254):
-            logger.error("Index value not in range [0..254]")
+            logger.error('Index value not in range [0..254]')
             return 0
 
         if 'tags' not in self or len(self.get('tags')) < num + 1:

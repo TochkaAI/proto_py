@@ -1,6 +1,6 @@
-"""Логер модуля proto_py"""
+"""Логер модуля pproto_py"""
 
 import logging
 
 
-logger = logging.getLogger("proto_py")
+logger = logging.getLogger("pproto_py")

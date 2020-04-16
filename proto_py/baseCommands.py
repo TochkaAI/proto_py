@@ -1,15 +1,13 @@
-"""
-Список констант с базовыми командами
-"""
+"""Список констант с базовыми командами"""
 from .badSituations import MessageStatusFailed, MessageStatusError
 from .message import Message
 from .logger import logger
 
 
-Unknown = "UNKNOWN"
-Error = "ERROR"
-ProtocolCompatible = "PROTOCOL_COMPATIBLE"
-CloseConnection = "CLOSE_CONNECTION"
+Unknown = 'UNKNOWN'
+Error = 'ERROR'
+ProtocolCompatible = 'PROTOCOL_COMPATIBLE'
+CloseConnection = 'CLOSE_CONNECTION'
 
 
 class REGISTRY_COMMAND:
@@ -28,10 +26,10 @@ class REGISTRY_COMMAND:
 
 
 # Регистрация базовых команд
-UNKNOWN =             REGISTRY_COMMAND(Unknown,            "4aef29d6-5b1a-4323-8655-ef0d4f1bb79d")
-ERROR =               REGISTRY_COMMAND(Error,              "b18b98cc-b026-4bfe-8e33-e7afebfbe78b")
+UNKNOWN             = REGISTRY_COMMAND(Unknown,            "4aef29d6-5b1a-4323-8655-ef0d4f1bb79d")
+ERROR               = REGISTRY_COMMAND(Error,              "b18b98cc-b026-4bfe-8e33-e7afebfbe78b")
 PROTOCOL_COMPATIBLE = REGISTRY_COMMAND(ProtocolCompatible, "173cbbeb-1d81-4e01-bf3c-5d06f9c878c3")
-CLOSE_CONNECTION =    REGISTRY_COMMAND(CloseConnection,    "e71921fd-e5b3-4f9b-8be7-283e8bb2a531")
+CLOSE_CONNECTION    = REGISTRY_COMMAND(CloseConnection,    "e71921fd-e5b3-4f9b-8be7-283e8bb2a531")
 
 
 class BaseCommand:
@@ -65,14 +63,14 @@ class BaseCommand:
         """
         Метод обработчик ответа на команду, вызывается в том случает когда отет приходит со статусом ExecStatus.Failed
         """
-        raise MessageStatusFailed(msg, f"Command {msg.get_id()} was failed")
+        raise MessageStatusFailed(msg, f'Command {msg.get_id()} was failed')
 
     @staticmethod
     def answer_error(msg: Message):
         """
         Метод обработчик ответа на команду, вызывается в том случает когда отет приходит со статусом ExecStatus.Failed
         """
-        raise MessageStatusError(msg, f"Command {msg.get_id()} was error")
+        raise MessageStatusError(msg, f'Command {msg.get_id()} was error')
 
     @staticmethod
     def handler(msg: Message):
