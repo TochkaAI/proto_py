@@ -31,3 +31,4 @@ proto_py.egg-info/
 build/
 
 dist/
+pproto_py.egg-info/
