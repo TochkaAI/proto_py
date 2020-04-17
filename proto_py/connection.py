@@ -7,7 +7,7 @@ from threading import Thread
 from . import baseCommands, config
 from .config import RECONNECT_TIME_WAIT
 from .const import JSON_PROTOCOL_FORMAT
-from .flags import MsgFlag, ExecStatus
+from .flags import MsgFlag, ExecStatus, Type
 from .message import Message
 from .handlerPool import HandlerPool
 from .messagePool import MessagePool
@@ -203,6 +203,11 @@ class Connection:
     def create_command(self, command: baseCommands.BaseCommand) -> Message:
         """Метод просто создаёт Message с типом Команда и заданным UUID команды"""
         msg = Message.command(self, command.COMMAND_UUID)
+        return msg
+
+    def create_event(self, command: baseCommands.BaseCommand) -> Message:
+        msg = self.create_command(command)
+        msg.set_type(Type.Event)
         return msg
 
     def start_catching_command(self, command: baseCommands.BaseCommand):
