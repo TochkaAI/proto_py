@@ -226,11 +226,14 @@ class Connection:
             logger.info(f'[{message.my_connection.getpeername()}] Попытка оптравки неизвестной команды!')
             return
 
-        message.set_connection(self)
-        if need_answer:
-            self.request_pool.add_message(message)
-        self.msend(message.get_bytes())
-        logger.info(f'[{self.getpeername()}] Msg send: {self.message_from_json(message.get_bytes().decode())}')
+        try:
+            message.set_connection(self)
+            if need_answer:
+                self.request_pool.add_message(message)
+            self.msend(message.get_bytes())
+            logger.info(f'[{self.getpeername()}] Msg send: {self.message_from_json(message.get_bytes().decode())}')
+        except Exception as err:
+            logger.error(f'Error: {err}, cant send message: {self.message_from_json(message.get_bytes().decode())}')
 
     def max_time_life_prolongation(self, message_id, command_id, sec_to_add):
         msg = self.request_pool.get_message(message_id)
