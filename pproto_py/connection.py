@@ -201,13 +201,13 @@ class Connection:
         return msg
 
     def create_command(self, command: baseCommands.BaseCommand) -> Message:
-        """Метод просто создаёт Message с типом Команда и заданным UUID команды"""
+        """Метод создаёт Message с типом Команда и заданным UUID команды"""
         msg = Message.command(self, command.COMMAND_UUID)
         return msg
 
     def create_event(self, command: baseCommands.BaseCommand) -> Message:
-        msg = self.create_command(command)
-        msg.set_type(Type.Event)
+        """Метод создаёт Message с типом Событие и заданным UUID команды"""
+        msg = Message.event(self, command.COMMAND_UUID)
         return msg
 
     def start_catching_command(self, command: baseCommands.BaseCommand):

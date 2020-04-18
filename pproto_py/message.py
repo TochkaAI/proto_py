@@ -184,6 +184,13 @@ class Message(dict):
         return msg
 
     @staticmethod
+    def event(connection, command_uuid):
+        """Статический метод создания сообщения с типом команды"""
+        msg = Message(connection, command_uuid=command_uuid)
+        msg.set_type(Type.Event)
+        return msg
+
+    @staticmethod
     def answer(connection, command_uuid):
         """Статический метод создания сообщения с типом ответ"""
         msg = Message(connection, command_uuid=command_uuid)
