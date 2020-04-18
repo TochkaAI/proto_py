@@ -332,7 +332,7 @@ class Connection:
         time_of_end = time_of_start + config.MAX_TIMEOUT_SEC
         while True:
             if time.time() > time_of_end:
-                return command.timeout()
+                raise TimeoutError
 
             msg = self.message_pool.find_by_command(command)
             if msg:
