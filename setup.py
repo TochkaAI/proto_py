@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='pproto-py',
-    version='1.1.8',
+    version='1.1.9',
     description='pproto_py is Python implementation of "Point Of View" communication protocol',
     url="https://github.com/TochkaAI/pproto_py",
     packages=find_packages(),

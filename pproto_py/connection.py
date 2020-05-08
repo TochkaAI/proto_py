@@ -131,6 +131,8 @@ class Connection:
         finally:
             self.socket.settimeout(None)
 
+    # TODO добавить эксепшены проверять 4 байта что норм приходят
+    # TODO сделать кастомный эксепшен
     def mrecv(self):
         """
         Обёртка над методом recv, она сама считывает в начале пакета его размер,
@@ -138,8 +140,14 @@ class Connection:
         """
         b_answer_size = self.socket.recv(4)
         answer_size = int.from_bytes(b_answer_size, 'big')
-        ball_answer = self.socket.recv(answer_size)
-        return ball_answer.decode()
+        data = bytearray()
+        while len(data) < answer_size:
+            data_frame = self.socket.recv(answer_size - len(data))
+            # if not data_frame:
+            #     raise Exception('Unexpected end of message')
+            data.extend(data_frame)
+        decoded = data.decode()
+        return decoded
 
     def start(self):
         """
