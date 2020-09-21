@@ -1,6 +1,6 @@
 """Вспомогательная структура для хранения списка доступных команд"""
-from . import baseCommands
-from .badSituations import NotImplementedCommand
+from . import base_commands
+from .exceptions import NotImplementedCommand
 
 
 class CommandList(dict):
@@ -18,7 +18,7 @@ class CommandList(dict):
         super().__init__(self)
         for field in dir(module):
             obj = getattr(module, field)
-            if isinstance(obj, baseCommands.REGISTRY_COMMAND):
+            if isinstance(obj, base_commands.REGISTRY_COMMAND):
                 uuid = obj.uuid
                 # 0 - CommandName
                 # 1 - CommandUUID

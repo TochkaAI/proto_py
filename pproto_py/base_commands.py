@@ -1,5 +1,5 @@
 """Список констант с базовыми командами"""
-from .badSituations import MessageStatusFailed, MessageStatusError
+from .exceptions import MessageStatusFailed, MessageStatusError
 from .message import Message
 from .logger import logger
 
@@ -61,14 +61,14 @@ class BaseCommand:
     @staticmethod
     def answer_fail(msg: Message):
         """
-        Метод обработчик ответа на команду, вызывается в том случает когда отет приходит со статусом ExecStatus.Failed
+        Метод обработчик ответа на команду, вызывается в том случает когда ответ приходит со статусом ExecStatus.Failed
         """
         raise MessageStatusFailed(msg, f'Command {msg.get_id()} was failed')
 
     @staticmethod
     def answer_error(msg: Message):
         """
-        Метод обработчик ответа на команду, вызывается в том случает когда отет приходит со статусом ExecStatus.Failed
+        Метод обработчик ответа на команду, вызывается в том случает когда ответ приходит со статусом ExecStatus.Failed
         """
         raise MessageStatusError(msg, f'Command {msg.get_id()} was error')
 

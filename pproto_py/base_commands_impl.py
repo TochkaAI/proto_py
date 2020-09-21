@@ -1,7 +1,7 @@
 import json
 
 from . import config
-from .baseCommands import BaseCommand, CLOSE_CONNECTION, PROTOCOL_COMPATIBLE, UNKNOWN, ERROR
+from .base_commands import BaseCommand, CLOSE_CONNECTION, PROTOCOL_COMPATIBLE, UNKNOWN, ERROR
 from .message import Message
 
 

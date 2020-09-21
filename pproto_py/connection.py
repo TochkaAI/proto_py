@@ -4,13 +4,13 @@ import time
 import uuid
 from threading import Thread
 
-from . import baseCommands, config
+from . import base_commands, config
 from .config import RECONNECT_TIME_WAIT
 from .const import JSON_PROTOCOL_FORMAT
 from .flags import MsgFlag, ExecStatus, Type
 from .message import Message
-from .handlerPool import HandlerPool
-from .messagePool import MessagePool
+from .handler_pool import HandlerPool
+from .message_pool import MessagePool
 from .logger import logger
 
 
@@ -133,6 +133,8 @@ class Connection:
 
     # TODO добавить эксепшены проверять 4 байта что норм приходят
     # TODO сделать кастомный эксепшен
+    # TODO проверить при большой нагрузке
+    # Паша говорил что может быть ситуация когда после вычитки answer size мы из пакета возьмем все что осталось от первого сообщения, но может
     def mrecv(self):
         """
         Обёртка над методом recv, она сама считывает в начале пакета его размер,
@@ -208,17 +210,17 @@ class Connection:
 
         return msg
 
-    def create_command(self, command: baseCommands.BaseCommand) -> Message:
+    def create_command(self, command: base_commands.BaseCommand) -> Message:
         """Метод создаёт Message с типом Команда и заданным UUID команды"""
         msg = Message.command(self, command.COMMAND_UUID)
         return msg
 
-    def create_event(self, command: baseCommands.BaseCommand) -> Message:
+    def create_event(self, command: base_commands.BaseCommand) -> Message:
         """Метод создаёт Message с типом Событие и заданным UUID команды"""
         msg = Message.event(self, command.COMMAND_UUID)
         return msg
 
-    def start_catching_command(self, command: baseCommands.BaseCommand):
+    def start_catching_command(self, command: base_commands.BaseCommand):
         self.sync_handler_pool.add_command(command)
 
     def send_message(self, message, need_answer=False):
@@ -282,7 +284,7 @@ class Connection:
                 self.request_pool.dell_message(msg)
                 self.message_pool.dell_message(ans_msg)
 
-                if ans_msg.get_command() == baseCommands.UNKNOWN:
+                if ans_msg.get_command() == base_commands.UNKNOWN:
                     return command.unknown(msg)
 
                 if ans_msg.get_status() == ExecStatus.Success:
@@ -318,7 +320,7 @@ class Connection:
                     self.request_pool.dell_message(msg)
                     self.message_pool.dell_message(ans_msg)
 
-                    if ans_msg.get_command() == baseCommands.UNKNOWN:
+                    if ans_msg.get_command() == base_commands.UNKNOWN:
                         command.unknown(msg)
                         return
 

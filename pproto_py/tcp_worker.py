@@ -1,13 +1,13 @@
 from threading import Thread
 
-from .badSituations import UnknownCommandRecieved
-from .commandList import CommandList
+from .exceptions import UnknownCommandRecieved
+from .command_list import CommandList
 from .connection import Connection
 from .logger import logger
-from . import baseCommands
-from . import baseCommandsImpl
-from .baseCommandsImpl import CloseConnectionCommand, UnknownCommand
-from .connectionPool import ConnectionPool
+from . import base_commands
+from . import base_commands_impl
+from .base_commands_impl import CloseConnectionCommand, UnknownCommand
+from .connection_pool import ConnectionPool
 
 
 class TcpWorker:
@@ -24,7 +24,7 @@ class TcpWorker:
         self.connection_pool = ConnectionPool()
         self.disconnection_handler = None
 
-        self.base_commands_list = CommandList(baseCommands, baseCommandsImpl)
+        self.base_commands_list = CommandList(base_commands, base_commands_impl)
         self.user_commands_list = CommandList(client_commands, client_command_impl)
 
         self.unknown_command_list = []

@@ -2,7 +2,7 @@ import json
 from copy import copy
 from uuid import uuid4
 
-from .badSituations import NotConnectionException, UnknownCommandRecieved
+from .exceptions import NotConnectionException, UnknownCommandRecieved
 from .logger import logger
 from .tools import try_uuid
 from .flags import MsgFlag, Type, ExecStatus

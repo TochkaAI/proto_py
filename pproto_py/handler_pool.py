@@ -1,4 +1,4 @@
-from .baseCommands import BaseCommand
+from .base_commands import BaseCommand
 
 
 class HandlerPool(set):

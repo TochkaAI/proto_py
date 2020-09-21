@@ -1,7 +1,7 @@
 import socket
 from threading import Thread
 
-from .tcpWorker import TcpWorker
+from .tcp_worker import TcpWorker
 from .connection import Connection
 from .logger import logger
 

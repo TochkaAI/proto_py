@@ -3,7 +3,7 @@ from threading import Thread
 
 from .config import RECONNECT_TIME_WAIT
 from .connection import Connection
-from .tcpWorker import TcpWorker
+from .tcp_worker import TcpWorker
 from .logger import logger
 
 
