@@ -2,34 +2,14 @@
 from .exceptions import MessageStatusFailed, MessageStatusError
 from .message import Message
 from .logger import logger
-
-
-Unknown = 'UNKNOWN'
-Error = 'ERROR'
-ProtocolCompatible = 'PROTOCOL_COMPATIBLE'
-CloseConnection = 'CLOSE_CONNECTION'
-
-
-class REGISTRY_COMMAND:
-    commands_names = []
-    commands_uuids = []
-
-    def __init__(self, name, uuid):
-        self.name = name
-        self.uuid = uuid
-        if name in REGISTRY_COMMAND.commands_names:
-            raise ValueError(f'Command name {name} is not unique')
-        if uuid in REGISTRY_COMMAND.commands_uuids:
-            raise ValueError(f'Command uuid {uuid} is not unique')
-        REGISTRY_COMMAND.commands_names.append(name)
-        REGISTRY_COMMAND.commands_uuids.append(uuid)
+from .command import Command
 
 
 # Регистрация базовых команд
-UNKNOWN             = REGISTRY_COMMAND(Unknown,            "4aef29d6-5b1a-4323-8655-ef0d4f1bb79d")
-ERROR               = REGISTRY_COMMAND(Error,              "b18b98cc-b026-4bfe-8e33-e7afebfbe78b")
-PROTOCOL_COMPATIBLE = REGISTRY_COMMAND(ProtocolCompatible, "173cbbeb-1d81-4e01-bf3c-5d06f9c878c3")
-CLOSE_CONNECTION    = REGISTRY_COMMAND(CloseConnection,    "e71921fd-e5b3-4f9b-8be7-283e8bb2a531")
+UNKNOWN             = Command("UNKNOWN", "4aef29d6-5b1a-4323-8655-ef0d4f1bb79d")
+ERROR               = Command("ERROR", "b18b98cc-b026-4bfe-8e33-e7afebfbe78b")
+PROTOCOL_COMPATIBLE = Command("PROTOCOL_COMPATIBLE", "173cbbeb-1d81-4e01-bf3c-5d06f9c878c3")
+CLOSE_CONNECTION    = Command("CLOSE_CONNECTION", "e71921fd-e5b3-4f9b-8be7-283e8bb2a531")
 
 
 class BaseCommand:
