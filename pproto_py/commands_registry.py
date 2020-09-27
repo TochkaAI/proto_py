@@ -3,10 +3,17 @@ from .command import Command
 from .exceptions import NotImplementedCommand
 
 
-class CommandList(dict):
+class CommandsRegistry(dict):
+    """Реализация структуры реестра команд"""
+
     @staticmethod
     def get_command_by_uuid(module, uuid):
-        """Из определённого модуля получает имя команды по UUID"""
+        """
+        Из определённого модуля получает имя команды по UUID
+
+        :param module:
+        :param uuid: 
+        """
         for cls in dir(module):
             obj = getattr(module, cls)
             if hasattr(obj, 'COMMAND_UUID') and getattr(obj, 'COMMAND_UUID') == uuid:
@@ -23,7 +30,7 @@ class CommandList(dict):
                 # 0 - CommandName
                 # 1 - CommandUUID
                 # 2 - CommandRealisation
-                self[uuid] = (obj.name, uuid, CommandList.get_command_by_uuid(module_impl, uuid))
+                self[uuid] = (obj.name, uuid, CommandsRegistry.get_command_by_uuid(module_impl, uuid))
 
     def get_command_impl(self, command_uuid):
         """По UUID команды получить её реализацию"""
