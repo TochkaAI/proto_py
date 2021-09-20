@@ -38,6 +38,6 @@ class TcpServer(TcpWorker):
         self.set_disconnection_handler(disconect_connection_handler)
 
     def stop(self):
-        self.finish_all(0, 'Good bye!')
+        self.finish_all(0, 'ef36429c-0661-4264-b982-5af39d3d0bcd', 'Good bye!')
         self.serv_socket.shutdown(socket.SHUT_RDWR)
         self.serv_socket.close()

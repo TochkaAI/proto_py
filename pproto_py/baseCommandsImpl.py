@@ -13,9 +13,9 @@ class CloseConnectionCommand(BaseCommand):
     COMMAND_UUID = CLOSE_CONNECTION.uuid
 
     @staticmethod
-    def initial(conn, code, desc):
+    def initial(conn, group, code, desc):
         msg = conn.create_command(CloseConnectionCommand)
-        msg.set_content({'code': code, 'description': desc})
+        msg.set_content({'group': group, 'code': code, 'description': desc})
         return msg
 
     @staticmethod
@@ -44,7 +44,7 @@ class ProtocolCompatibleCommand(BaseCommand):
         return msg
 
     @staticmethod
-    def answer(msg, code, descr):
+    def answer(msg, group, code, descr):
         msg.my_connection.close()
         return True
 
@@ -68,7 +68,7 @@ class ProtocolCompatibleCommand(BaseCommand):
             message = f'Protocol versions incompatible. ' \
                       f'This protocol version: {config.PROTOCOL_VERSION_LOW}-{config.PROTOCOL_VERSION_HIGH}. ' \
                       f'Remote protocol version: {msg.get("PROTOCOL_VERSION_LOW")}-{msg.get("PROTOCOL_VERSION_HIGH")}'
-            connection.exec_command_sync(CloseConnectionCommand, 0, message)
+            connection.exec_command_sync(CloseConnectionCommand, 0, 'afa4209c-bd5a-4791-9713-5c3f4ab3c52b', message)
             return False
         return True
 

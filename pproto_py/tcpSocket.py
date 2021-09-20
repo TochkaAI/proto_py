@@ -52,7 +52,7 @@ class TcpSocket(TcpWorker):
         return connection
 
     def disconnect(self):
-        self.finish_all(0, 'Good bye!')
+        self.finish_all(0, '1be0a2ad-9673-4dca-8b31-895f7986c834', 'Good bye!')
 
     def get_disconnect_handler(self, user_handler):
         def inner_handler(connection: Connection):

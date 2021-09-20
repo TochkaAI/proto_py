@@ -102,10 +102,10 @@ class TcpWorker:
         self.connection_pool.add_connection(connection)
         self.start_listening(connection)
 
-    def finish_all(self, code, description):
+    def finish_all(self, group, code, description):
         """Функция завершает все соединения предварительно отправив команду CloseConnection"""
         for conn in list(self.connection_pool.values()):
             peer_name = conn.getpeername()
-            conn.exec_command_sync(CloseConnectionCommand, code, description)
+            conn.exec_command_sync(CloseConnectionCommand, group, code, description)
             conn.close()
             logger.info(f'[{peer_name}] Disconect from host')
