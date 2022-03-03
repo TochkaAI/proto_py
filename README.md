@@ -1,3 +1,1 @@
-# Py Protocol
-
-Python реализация бинарного протокола взаимодействия компонентов.
+Python реализация RPC протокола [PProto](https://github.com/hkarel/PProtoCpp).
