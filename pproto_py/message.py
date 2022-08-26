@@ -2,7 +2,7 @@ import json
 from copy import copy
 from uuid import uuid4
 
-from .badSituations import NotConnectionException, UnknownCommandRecieved
+from .badSituations import NotConnectionException, UnknownCommandReceived
 from .logger import logger
 from .tools import try_uuid
 from .flags import MsgFlag, Type, ExecStatus
@@ -69,7 +69,7 @@ class Message(dict):
                 self['command'] = command_uuid
                 self['Command'] = comm_name
             else:
-                raise UnknownCommandRecieved(f'Unknown command uuid {command_uuid}')
+                raise UnknownCommandReceived(f'Unknown command uuid {command_uuid}')
 
         # месседж не может существовать без флагов, при создании они инициализируются дефолтными значениями
         self['flags'] = MsgFlag()

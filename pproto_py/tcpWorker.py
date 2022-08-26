@@ -1,6 +1,6 @@
 from threading import Thread
 
-from .badSituations import UnknownCommandRecieved
+from .badSituations import UnknownCommandReceived
 from .commandList import CommandList
 from .connection import Connection
 from .logger import logger
@@ -76,11 +76,11 @@ class TcpWorker:
                 # logger.info(f'[{connection.getpeername()}] JSON received: {json_data}')
                 try:
                     msg = connection.message_from_json(json_data)  # Type: Message
-                except UnknownCommandRecieved:
+                except UnknownCommandReceived:
                     logger.info(f'[{connection.getpeername()}] Unknown msg received')
                     connection.exec_command(UnknownCommand, json_data)
                 else:
-                    logger.info(f'[{connection.getpeername()}] Msg  received: {msg}')
+                    logger.info(f'[{connection.getpeername()}] Msg received: {msg}')
                     # Это ответы, которые нужно обработать, в синхронном или асинхронном режиме
                     if msg.get_id() in connection.request_pool or \
                             connection.sync_handler_pool.is_catching(msg.get_command()):
@@ -108,4 +108,4 @@ class TcpWorker:
             peer_name = conn.getpeername()
             conn.exec_command_sync(CloseConnectionCommand, group, code, description)
             conn.close()
-            logger.info(f'[{peer_name}] Disconect from host')
+            logger.info(f'[{peer_name}] Disconnect from host')

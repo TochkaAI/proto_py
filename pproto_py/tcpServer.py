@@ -26,7 +26,7 @@ class TcpServer(TcpWorker):
             if new_client_handler:
                 new_client_handler(connection)
 
-    def run(self, new_connection_handler=None, disconect_connection_handler=None):
+    def run(self, new_connection_handler=None, disconnect_connection_handler=None):
         self.serv_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.serv_socket.bind((self.ip, self.port))
         self.serv_socket.listen(10)
@@ -35,7 +35,7 @@ class TcpServer(TcpWorker):
         thread.daemon = True
         thread.start()
 
-        self.set_disconnection_handler(disconect_connection_handler)
+        self.set_disconnection_handler(disconnect_connection_handler)
 
     def stop(self):
         self.finish_all(0, 'ef36429c-0661-4264-b982-5af39d3d0bcd', 'Good bye!')
