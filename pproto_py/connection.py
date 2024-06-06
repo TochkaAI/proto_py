@@ -198,7 +198,7 @@ class Connection:
 
     def message_from_json(self, string_msg):
         """Метод разбора сообщения из json-строки приходящей из сети"""
-        received_dict = json.loads(string_msg)
+        received_dict = json.loads(string_msg.replace('""""', '""'))
         msg = Message(self, id_=received_dict['id'], command_uuid=received_dict['command'])
         if received_dict.get('flags'):
             msg['flags'] = MsgFlag.from_digit(received_dict.get('flags'))
