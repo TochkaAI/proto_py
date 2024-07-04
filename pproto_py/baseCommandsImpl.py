@@ -1,4 +1,4 @@
-import json
+import orjson
 
 from . import config
 from .baseCommands import BaseCommand, CLOSE_CONNECTION, PROTOCOL_COMPATIBLE, UNKNOWN, ERROR
@@ -82,7 +82,7 @@ class UnknownCommand(BaseCommand):
 
     @staticmethod
     def initial(conn, unknown_answer):
-        unkwonw_data = json.loads(unknown_answer)
+        unkwonw_data = orjson.loads(unknown_answer)
         msg = conn.create_command(UnknownCommand)
         content = {
             'commandId': unkwonw_data['command'],
